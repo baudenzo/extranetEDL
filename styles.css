@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Abel:wght@400;700&display=swap');
+
+.waves{
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: -1;
+    transform: scaleY(-1);
+}
+
+.navbar-custom {
+    background-color: #199ea3;
+}
+
+.navbar-custom .navbar-brand, .navbar-custom .navbar-nav .nav-link,
+.navbar-custom .navbar-text {
+    color: white !important;
+}
+
+.navbar-custom .navbar-nav .nav-link:hover {
+    color: #ececec !important;
+}
+
+/* body {
+    font-family: 'Abel', sans-serif;
+    font-weight: 700;
+} */
