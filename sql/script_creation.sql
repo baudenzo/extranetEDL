@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS utilisateurs (
     numlogin VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     role ENUM('admin', 'formateur', 'stagiaire OP', 'stagiaire FPC') NOT NULL,
+    sexe ENUM('masculin', 'feminin', 'autre') NOT NULL,
+    photo VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
+);
 

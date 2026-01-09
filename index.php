@@ -2,8 +2,10 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>EDL - Connexion</title>  
-    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <title>EDL - Connexion</title> 
+    <link rel="icon" type="image/png" href="img/logo.png"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -13,7 +15,6 @@ $pdo = ConnexionBDD();
 
 session_start();
 
-// Traitement du formulaire de connexion
 $error = '';
 if (isset($_POST['username']) && isset($_POST['password'])) {
     $username = $_POST['username'];
@@ -26,6 +27,8 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
     if ($user) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['role'] = $user['role'];
+        $_SESSION['nom'] = $user['nom'];
+        $_SESSION['prenom'] = $user['prenom'];
         $_SESSION['logged_in'] = true;
         header('Location: dashboard.php');
         exit;
@@ -39,12 +42,13 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
 
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-12 text-center mt-5">
-                <h1 class="text-center">Bienvenue sur votre espace EDL Veuillez vous connecter</h1>
+            <div class="col-md-8 col-lg-6 text-center mt-5">
+                <img src="img/logo.png" alt="Logo EDL" class="logo img-fluid mb-4" style="max-width: 180px;">
+                <h1 class="mb-5">Bienvenue sur votre espace EDL</h1>
             </div>
         </div>
         <div class="row justify-content-center">
-            <div class="col-md-4">
+            <div class="col-md-6 col-lg-4">
                 <div class="card p-4">
                     <?php if ($error): ?>
                         <div class="alert alert-danger text-center"><?php echo $error; ?></div>
@@ -61,10 +65,14 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
                         <div class="text-center mt-4">
                             <button type="submit" class="btn btn-primary">Se connecter</button>
                         </div>
+                        <div class="text-center mt-3">
+                            <a href="oubli_mdp.php" class="text-muted">Mot de passe oublié ?</a>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
+    </div>
 
 
     <div class="waves">
@@ -75,16 +83,3 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
         </svg>
     </div>
 </body>
-
-
-
-
-
-
-
-
-<!-- couleur principale : #199ea3 - bleu
-couleur secondaire : #7cc8cb - autre bleu
-couleur tertiaire : #ffffff - blanc 
-
-font: abel pro bold -->

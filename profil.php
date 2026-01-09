@@ -1,11 +1,23 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>EDL - Profil</title>
+    <link rel="icon" type="image/png" href="img/logo.png"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
 <?php
 session_start();
+include 'connexionbdd.php';
+
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     header('Location: index.php');
     exit;
 }
 
-include 'connexionbdd.php';
 $pdo = ConnexionBDD();
 $user_id = $_SESSION['user_id'];
 
@@ -40,19 +52,7 @@ function getDefaultPhoto($sexe) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - EDL</title>
-    <link rel="icon" type="image/png" href="img/logo.png"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+<nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center" href="profil.php">
                 <?php if ($user['photo']): ?>
@@ -68,7 +68,7 @@ function getDefaultPhoto($sexe) {
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="dashboard.php">Accueil</a>
+                        <a class="nav-link" href="dashboard.php">Accueil</a>
                     </li>
                     <?php if ($user['role'] == 'admin'): ?>
                         <li class="nav-item">
@@ -118,25 +118,34 @@ function getDefaultPhoto($sexe) {
         </div>
     </nav>
 
-    <div class="container mt-4">
-        <?php if ($_SESSION['role'] == 'admin'): ?>
-            <h1>Bienvenue sur votre espace <?php echo getRoleLabel('admin', $user['sexe']); ?>, <?php echo $_SESSION['prenom']; ?> !</h1>
-        <?php elseif ($_SESSION['role'] == 'formateur'): ?>
-            <h1>Bienvenue sur votre espace <?php echo getRoleLabel('formateur', $user['sexe']); ?>, <?php echo $_SESSION['prenom']; ?> !</h1>
-        <?php elseif ($_SESSION['role'] == 'stagiaire OP'): ?>
-            <h1>Bienvenue sur votre espace Stagiaire OP, <?php echo $_SESSION['prenom']; ?> !</h1>
-        <?php elseif ($_SESSION['role'] == 'stagiaire FPC'): ?>
-            <h1>Bienvenue sur votre espace Stagiaire FPC, <?php echo $_SESSION['prenom']; ?> !</h1>
-        <?php else: ?>
-            <div class="alert alert-danger">
-                <p>Rôle non reconnu. Contactez l'administrateur/administratrice.</p>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h2>Profil de <?php echo htmlspecialchars($user['prenom'] . ' ' . $user['nom']); ?></h2>
+                </div>
+                <div class="card-body text-center">
+                    <?php if ($user['photo']): ?>
+                        <img src="<?php echo htmlspecialchars($user['photo']); ?>?v=<?php echo time(); ?>" alt="Photo de profil" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px;">
+                    <?php else: ?>
+                        <img src="<?php echo getDefaultPhoto($user['sexe']); ?>" alt="Photo par défaut" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px;">
+                    <?php endif; ?>
+                    <p><strong>Prénom :</strong> <?php echo htmlspecialchars($user['prenom']); ?></p>
+                    <p><strong>Nom :</strong> <?php echo htmlspecialchars($user['nom']); ?></p>
+                    <p><strong>Sexe :</strong> <?php echo htmlspecialchars(ucfirst($user['sexe'])); ?></p>
+                    <p><strong>Email :</strong> <?php echo htmlspecialchars($user['email']); ?></p>
+                    <p><strong>Numéro de login :</strong> <?php echo htmlspecialchars($user['numlogin']); ?></p>
+                    <p><strong>Rôle :</strong> <?php echo htmlspecialchars(getRoleLabel($user['role'], $user['sexe'])); ?></p>
+                    <div class="mt-4">
+                        <a href="modifier_profil.php" class="btn btn-primary">Modifier mon profil</a>
+                    </div>
+                </div>
             </div>
-        <?php endif; ?>
+        </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-
-<!-- CRUD -->

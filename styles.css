@@ -1,4 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Abel:wght@400;700&display=swap');
+/* Style moderne et épuré */
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
 .waves{
     position: fixed;
@@ -10,19 +15,152 @@
 }
 
 .navbar-custom {
-    background-color: #199ea3;
+    background: linear-gradient(135deg, #199ea3 0%, #0d7377 100%);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
 }
 
 .navbar-custom .navbar-brand, .navbar-custom .navbar-nav .nav-link,
 .navbar-custom .navbar-text {
     color: white !important;
+    transition: all 0.3s ease;
+    padding: 8px 16px;
+    border-radius: 8px;
+    margin: 0 8px;
+}
+
+.navbar-custom .navbar-brand:hover {
+    background-color: rgba(255, 255, 255, 0.15);
 }
 
 .navbar-custom .navbar-nav .nav-link:hover {
-    color: #ececec !important;
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
 }
 
-/* body {
-    font-family: 'Abel', sans-serif;
-    font-weight: 700;
-} */
+.navbar-custom .navbar-nav .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Cartes avec design différent */
+.card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #199ea3 0%, #7cc8cb 100%);
+    color: white;
+    font-weight: 600;
+    border: none;
+    padding: 20px;
+}
+
+.card-body {
+    padding: 24px;
+    background-color: white;
+}
+
+/* Boutons stylisés */
+.btn-primary {
+    background: linear-gradient(135deg, #199ea3 0%, #0d7377 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(25, 158, 163, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(25, 158, 163, 0.4);
+    background: linear-gradient(135deg, #0d7377 0%, #199ea3 100%);
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+}
+
+/* Inputs modernes */
+.form-control, .form-select {
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #199ea3;
+    box-shadow: 0 0 0 4px rgba(25, 158, 163, 0.1);
+}
+
+/* pp modifiés */
+.rounded-circle {
+    border: 3px solid white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.img-fluid {
+    max-width: 200px;
+    height: auto;
+}
+
+.text-center {
+    padding-bottom: 15px;
+}
+
+/* Alertes */
+.alert {
+    border: none;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive pour mobile */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .navbar-custom .navbar-nav .nav-link,
+    .navbar-custom .navbar-brand {
+        margin: 4px;
+        padding: 6px 12px;
+        font-size: 14px;
+    }
+    
+    .card {
+        margin-bottom: 20px;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+}
+
+/* couleur principale : #199ea3 - bleu
+couleur secondaire : #7cc8cb - autre bleu
+couleur tertiaire : #ffffff - blanc */
