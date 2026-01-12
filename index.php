@@ -43,7 +43,7 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6 text-center mt-5">
-                <img src="img/logo.png" alt="Logo EDL" class="logo img-fluid mb-4" style="max-width: 180px;">
+                <a href="index.php"><img src="img/logo.png" alt="Logo EDL" class="logo img-fluid mb-4" style="max-width: 180px;"></a>
                 <h1 class="mb-5">Bienvenue sur votre espace EDL</h1>
             </div>
         </div>
