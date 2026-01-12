@@ -1,0 +1,22 @@
+# Fichiers de configuration sensibles
+config.php
+connexionbdd.php
+doc_perso.md
+
+# Scripts SQL avec données de test
+sql/script_insertion.sql
+
+# Photos de profil et uploads
+pp/
+img/
+
+# Dossiers système
+.vscode/
+.idea/
+
+# Fichiers temporaires
+*.tmp
+*.log
+*~
+
+
