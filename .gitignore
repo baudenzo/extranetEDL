@@ -2,6 +2,7 @@
 config.php
 connexionbdd.php
 doc_perso.md
+email_config.php
 
 # Scripts SQL avec données de test
 sql/script_insertion.sql
@@ -18,5 +19,8 @@ img/
 *.tmp
 *.log
 *~
+
+# Dépendances Composer (ne pas push, trop volumineux)
+vendor/
 
 
