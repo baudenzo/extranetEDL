@@ -11,61 +11,32 @@
 
 <?php
 include 'connexionbdd.php';
+include 'email_functions.php';
 $pdo = ConnexionBDD();
 
 session_start();
 
-$step = 1; 
 $error = '';
 $success = '';
-$user_info = null;
 
-// vérification de l'email
-if (isset($_POST['email']) && !isset($_POST['new_password'])) {
+if (isset($_POST['email'])) {
     $email = trim($_POST['email']);
     
-    $stmt = $pdo->prepare('SELECT id, prenom, nom, numlogin FROM utilisateurs WHERE email = :email');
+    $stmt = $pdo->prepare('SELECT id, prenom, nom, email FROM utilisateurs WHERE email = :email');
     $stmt->execute(['email' => $email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($user) {
-        $step = 2;
-        $user_info = $user;
-    } else {
-        $error = "Aucun compte n'est associé à cette adresse email.";
-    }
-}
-
-// changer le mot de passe
-if (isset($_POST['new_password']) && isset($_POST['user_id'])) {
-    $user_id = (int)$_POST['user_id'];
-    $new_password = $_POST['new_password'];
-    $confirm_password = $_POST['confirm_password'];
-    
-    if (strlen($new_password) < 4) {
-        $error = "Le mot de passe doit contenir au moins 4 caractères.";
-        $step = 2;
-        // Récupérer les infos utilisateur
-        $stmt = $pdo->prepare('SELECT id, prenom, nom, numlogin FROM utilisateurs WHERE id = :id');
-        $stmt->execute(['id' => $user_id]);
-        $user_info = $stmt->fetch(PDO::FETCH_ASSOC);
-    } elseif ($new_password !== $confirm_password) {
-        $error = "Les mots de passe ne correspondent pas.";
-        $step = 2;
-        // Récupérer les infos utilisateur
-        $stmt = $pdo->prepare('SELECT id, prenom, nom, numlogin FROM utilisateurs WHERE id = :id');
-        $stmt->execute(['id' => $user_id]);
-        $user_info = $stmt->fetch(PDO::FETCH_ASSOC);
-    } else {
-        // Mettre à jour le mot de passe
-        $stmt = $pdo->prepare('UPDATE utilisateurs SET password = SHA2(:password, 256) WHERE id = :id');
-        $result = $stmt->execute([
-            'password' => $new_password,
-            'id' => $user_id
-        ]);
+        $token = creerTokenReset($pdo, $user['id']);
+        $result = envoyerEmailResetPassword($user['email'], $user['prenom'] . ' ' . $user['nom'], $token);
         
-        $success = "Votre mot de passe a été modifié avec succès !";
-        $step = 3;
+        if ($result['success']) {
+            $success = "Un email de réinitialisation a été envoyé à votre adresse. Vérifiez votre boîte de réception (et vos spams).";
+        } else {
+            $error = "Erreur lors de l'envoi de l'email. Veuillez réessayer.";
+        }
+    } else {
+        $success = "Si un compte existe avec cet email, un lien de réinitialisation a été envoyé.";
     }
 }
 
@@ -76,12 +47,8 @@ if (isset($_POST['new_password']) && isset($_POST['user_id'])) {
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6 text-center mt-5">
                 <a href="index.php"><img src="img/logo.png" alt="Logo EDL" class="logo img-fluid mb-4" style="max-width: 180px;"></a>
-                <h1 class="mb-3">Réinitialisation du mot de passe</h1>
-                <?php if ($step == 1): ?>
-                    <p class="text-muted mb-5">Entrez votre adresse email pour identifier votre compte</p>
-                <?php elseif ($step == 2): ?>
-                    <p class="text-muted mb-5">Choisissez votre nouveau mot de passe</p>
-                <?php endif; ?>
+                <h1 class="mb-3">Mot de passe oublié ?</h1>
+                <p class="text-muted mb-5">Entrez votre adresse email pour recevoir un lien de réinitialisation</p>
             </div>
         </div>
         
@@ -89,57 +56,44 @@ if (isset($_POST['new_password']) && isset($_POST['user_id'])) {
             <div class="col-md-7 col-lg-5">
                 <div class="card p-4">
                     <?php if ($error): ?>
-                        <div class="alert alert-danger"><?php echo $error; ?></div>
+                        <div class="alert alert-danger">
+                            <?php echo $error; ?>
+                        </div>
                     <?php endif; ?>
                     
                     <?php if ($success): ?>
-                        <div class="alert alert-success text-center"><?php echo $success; ?></div>
-                    <?php endif; ?>
-                    
-                    <?php if ($step == 1): ?>
+                        <div class="alert alert-success">
+                            <?php echo $success; ?>
+                        </div>
+                        <div class="alert alert-info mt-3">
+                            <strong>📧 Prochaines étapes :</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Vérifiez votre boîte de réception</li>
+                                <li>Vérifiez aussi vos spams</li>
+                                <li>Cliquez sur le lien (valable 1 heure)</li>
+                            </ul>
+                        </div>
+                        <div class="text-center mt-4">
+                            <a href="index.php" class="btn btn-primary">Retour à la connexion</a>
+                        </div>
+                    <?php else: ?>
                         <form method="post" action="">
                             <div class="form-group mb-3">
                                 <label for="email">Adresse email :</label>
-                                <input type="email" class="form-control" id="email" name="email" required autofocus>
+                                <input type="email" class="form-control" id="email" name="email" required autofocus placeholder="votre-email@exemple.com">
                                 <small class="form-text text-muted">L'email associé à votre compte EDL</small>
                             </div>
                             
                             <div class="text-center mt-4">
-                                <button type="submit" class="btn btn-primary">Continuer</button>
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    Envoyer le lien de réinitialisation
+                                </button>
                             </div>
                             
                             <div class="text-center mt-3">
                                 <a href="index.php" class="text-muted">Retour à la connexion</a>
                             </div>
                         </form>
-                        
-                    <?php elseif ($step == 2): ?>
-                        <form method="post" action="">
-                            <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($user_info['id']); ?>">
-                            <div class="form-group mb-3">
-                                <label for="new_password">Nouveau mot de passe :</label>
-                                <input type="password" class="form-control" id="new_password" name="new_password" required autofocus>
-                                <small class="form-text text-muted">Minimum 4 caractères</small>
-                            </div>
-                            
-                            <div class="form-group mb-3">
-                                <label for="confirm_password">Confirmer le mot de passe :</label>
-                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-                            </div>
-                            
-                            <div class="text-center mt-4">
-                                <button type="submit" class="btn btn-success">Modifier le mot de passe</button>
-                            </div>
-                            
-                            <div class="text-center mt-3">
-                                <a href="oubli_mdp.php" class="text-muted" onclick="<?php unset($_SESSION['reset_user_id']); unset($_SESSION['reset_user_info']); ?>">Recommencer</a>
-                            </div>
-                        </form>
-                        
-                    <?php elseif ($step == 3): ?>
-                        <div class="text-center mt-3">
-                            <a href="index.php" class="btn btn-primary">Se connecter</a>
-                        </div>
                     <?php endif; ?>
                 </div>
             </div>
