@@ -163,4 +163,126 @@ function marquerTokenUtilise($connexion, $token) {
     $stmt = $connexion->prepare("UPDATE password_reset_tokens SET used = 1 WHERE token = ?");
     return $stmt->execute([$token]);
 }
+
+/**
+ * Fonction pour générer un login aléatoire unique
+ * 
+ * @param PDO $connexion La connexion à la base de données
+ * @return string Login de 6 caractères alphanumériques (minuscules + chiffres)
+ */
+function genererLoginUnique($connexion) {
+    $caracteres = '0123456789abcdefghijklmnopqrstuvwxyz';
+    $tentatives_max = 10;
+    
+    for ($tentative = 0; $tentative < $tentatives_max; $tentative++) {
+        $login = '';
+        for ($i = 0; $i < 6; $i++) {
+            $login .= $caracteres[random_int(0, strlen($caracteres) - 1)];
+        }
+        
+        $stmt = $connexion->prepare("SELECT COUNT(*) FROM utilisateurs WHERE numlogin = ?");
+        $stmt->execute([$login]);
+        $existe = $stmt->fetchColumn();
+        
+        if (!$existe) {
+            return $login;
+        }
+    }
+    
+    throw new Exception("Impossible de générer un login unique après " . $tentatives_max . " tentatives");
+}
+
+/**
+ * Fonction pour envoyer un email avec les identifiants de connexion
+ * 
+ * @param string $destinataire_email L'email de l'utilisateur
+ * @param string $destinataire_nom Le nom complet de l'utilisateur
+ * @param string $login Le login généré
+ * @param string $password Le mot de passe (optionnel si déjà défini par l'utilisateur)
+ * @return array Tableau avec 'success' (bool) et 'message' (string)
+ */
+function envoyerEmailNouveauCompte($destinataire_email, $destinataire_nom, $login, $password = null) {
+    $mail = new PHPMailer(true);
+    
+    try {
+        $mail->isSMTP();
+        $mail->Host       = SMTP_HOST;
+        $mail->SMTPAuth   = SMTP_AUTH;
+        $mail->Username   = SMTP_USERNAME;
+        $mail->Password   = SMTP_PASSWORD;
+        $mail->SMTPSecure = SMTP_SECURE;
+        $mail->Port       = SMTP_PORT;
+        $mail->CharSet    = MAIL_CHARSET;
+        $mail->SMTPDebug  = MAIL_DEBUG;
+        
+        $mail->setFrom(MAIL_FROM_EMAIL, MAIL_FROM_NAME);
+        $mail->addAddress($destinataire_email, $destinataire_nom);
+        
+        $mail->isHTML(true);
+        $mail->Subject = 'Vos identifiants de connexion EDL';
+        
+        $login_url = BASE_URL . '/index.php';
+        
+        $password_section = '';
+        $password_text = '';
+        if ($password) {
+            $password_section = "<p style='margin: 5px 0;'><strong>Mot de passe :</strong> <code style='background: white; padding: 5px 10px; border-radius: 4px; font-size: 16px;'>" . htmlspecialchars($password) . "</code></p>";
+            $password_text = "\nMot de passe : " . $password;
+        }
+        
+        $mail->Body = "
+        <html>
+        <body>
+            <h1>EDL - Bienvenue !</h1>
+            
+            <p>Bonjour <strong>" . htmlspecialchars($destinataire_nom) . "</strong>,</p>
+            
+            <p>Votre compte EDL a été créé avec succès. Voici vos identifiants de connexion :</p>
+            
+            <div style='background-color: #f0f0f0; padding: 15px; border-radius: 8px; margin: 20px 0;'>
+                <p style='margin: 5px 0;'><strong>Login :</strong> <code style='background: white; padding: 5px 10px; border-radius: 4px; font-size: 16px;'>" . htmlspecialchars($login) . "</code></p>
+                " . $password_section . "
+            </div>
+            
+            <p>Pour vous connecter, rendez-vous sur :</p>
+            <p><a href='" . $login_url . "'>" . $login_url . "</a></p>
+            
+            <p><strong>Important :</strong></p>
+            <ul>
+                <li><strong>Conservez précieusement ces identifiants</strong></li>
+                <li>Vous pouvez modifier votre mot de passe après votre première connexion</li>
+                <li>Votre login ne peut pas être modifié</li>
+                <li>Pour des raisons de sécurité, ne partagez jamais vos identifiants</li>
+            </ul>
+            
+            <hr>
+            <p><small>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</small></p>
+            <p><small>&copy; " . date('Y') . " EDL - Tous droits réservés</small></p>
+        </body>
+        </html>
+        ";
+        
+        $mail->AltBody = "Bonjour " . $destinataire_nom . ",\n\n"
+                       . "Votre compte EDL a été créé avec succès.\n\n"
+                       . "Vos identifiants de connexion :\n"
+                       . "Login : " . $login
+                       . $password_text . "\n\n"
+                       . "Pour vous connecter : " . $login_url . "\n\n"
+                       . "Conservez précieusement ces identifiants.\n\n"
+                       . "Cordialement,\nL'équipe EDL";
+        
+        $mail->send();
+        
+        return [
+            'success' => true,
+            'message' => 'Email envoyé avec succès'
+        ];
+        
+    } catch (Exception $e) {
+        return [
+            'success' => false,
+            'message' => "Erreur lors de l'envoi de l'email : {$mail->ErrorInfo}"
+        ];
+    }
+}
 ?>

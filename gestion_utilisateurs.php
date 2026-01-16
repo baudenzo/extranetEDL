@@ -1,6 +1,7 @@
 <?php
 session_start();
 include 'connexionbdd.php';
+include 'email_functions.php';
 
 // accès réservé aux admins
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true || $_SESSION['role'] !== 'admin') {
@@ -94,11 +95,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $feedback = 'Utilisateur créé. Format de photo non supporté (autorisé: jpg, jpeg, png).';
                 }
             } else {
-                // Assigner la photo par défaut selon le sexe
                 $defaultPhoto = getDefaultPhoto($sexe);
                 $up = $pdo->prepare('UPDATE utilisateurs SET photo = :photo WHERE id = :id');
                 $up->execute(['photo' => $defaultPhoto, 'id' => $newId]);
                 $feedback = 'Utilisateur créé avec succès.';
+            }
+            
+            if (isset($_POST['envoyer_email']) && $_POST['envoyer_email'] === '1') {
+                $resultEmail = envoyerEmailNouveauCompte($email, $prenom . ' ' . $nom, $numlogin, $password);
+                if ($resultEmail['success']) {
+                    $feedback .= ' Email envoyé avec les identifiants.';
+                } else {
+                    $feedback .= ' Attention : échec de l\'envoi de l\'email.';
+                }
             }
         } elseif ($action === 'update_all') {
             // Mise à jour multiple de tous les utilisateurs modifiés
@@ -279,7 +288,13 @@ if ($q !== '') {
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Numéro de login</label>
-                        <input type="text" name="numlogin" class="form-control" required>
+                        <div class="input-group">
+                            <input type="text" name="numlogin" id="numlogin" class="form-control" required>
+                            <button type="button" class="btn btn-secondary" id="btnGenererLogin" title="Générer un login aléatoire">
+                                🎲 Générer
+                            </button>
+                        </div>
+                        <small class="text-muted">6 caractères alphanumériques</small>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Rôle</label>
@@ -308,7 +323,15 @@ if ($q !== '') {
                         <small class="text-muted">Formats acceptés: JPG, JPEG, PNG.</small>
                     </div>
                     <div class="col-12">
-                        <button type="submit" class="btn btn-primary">Créer</button>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="envoyer_email" value="1" id="envoyerEmail">
+                            <label class="form-check-label" for="envoyerEmail">
+                                📧 Envoyer les identifiants par email à l'utilisateur
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">Créer l'utilisateur</button>
                     </div>
                 </form>
             </div>
@@ -396,6 +419,16 @@ if ($q !== '') {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Gestion du bouton "Générer login"
+        document.getElementById('btnGenererLogin').addEventListener('click', function() {
+            const caracteres = '0123456789abcdefghijklmnopqrstuvwxyz';
+            let login = '';
+            for (let i = 0; i < 6; i++) {
+                login += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+            }
+            document.getElementById('numlogin').value = login;
+        });
+        
         // Gestion des boutons de suppression
         document.querySelectorAll('.delete-user-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {

@@ -68,6 +68,11 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
                         <div class="text-center mt-3">
                             <a href="oubli_mdp.php" class="text-muted">Mot de passe oublié ?</a>
                         </div>
+                        <hr class="my-4">
+                        <div class="text-center">
+                            <p class="mb-2 text-muted">Vous êtes stagiaire ?</p>
+                            <a href="inscription.php" class="btn btn-outline-primary w-100">Créer un compte</a>
+                        </div>
                     </form>
                 </div>
             </div>
