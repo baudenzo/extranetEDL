@@ -1,0 +1,14 @@
+# Sécurité : empêcher l'exécution de scripts PHP dans le dossier uploads
+php_flag engine off
+
+# Autoriser seulement le téléchargement de certains types de fichiers
+<FilesMatch "\.(php|php3|php4|php5|phtml|pl|py|jsp|asp|sh|cgi)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Autoriser les types de fichiers autorisés
+<FilesMatch "\.(jpg|jpeg|png|gif|pdf|mp3|mp4|wav|avi|mov|doc|docx|xls|xlsx)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
