@@ -127,7 +127,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['fichier'])) {
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link" href="dashboard.php">Accueil</a></li>
                     <?php if ($user['role'] == 'admin'): ?>
-                        <li class="nav-item"><a class="nav-link" href="gestion_utilisateurs.php">Gestion utilisateurs</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownGestion" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Gestion
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdownGestion">
+                                <li><a class="dropdown-item" href="gestion_utilisateurs.php">Gestion des utilisateurs</a></li>
+                                <li><a class="dropdown-item" href="referentiel.php">Gestion référentiel</a></li>
+                            </ul>
+                        </li>
                     <?php endif; ?>
                     <li class="nav-item"><a class="nav-link active" href="upload_ressource.php">Uploader une ressource</a></li>
                 </ul>
@@ -186,10 +194,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['fichier'])) {
                                     </small>
                                 </div>
                                 
-                                <div class="alert alert-info">
-                                    <strong>Information :</strong> Le fichier sera renommé automatiquement pour des raisons de sécurité.
-                                </div>
-                                
                                 <div class="text-center mt-4">
                                     <button type="submit" class="btn btn-primary btn-lg">
                                         Uploader la ressource
@@ -218,5 +222,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['fichier'])) {
             }
         });
     </script>
+    <?php include 'footer.php'; ?>
+
 </body>
 </html>

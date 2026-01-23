@@ -71,17 +71,14 @@ function getDefaultPhoto($sexe) {
                         <a class="nav-link" href="dashboard.php">Accueil</a>
                     </li>
                     <?php if ($user['role'] == 'admin'): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="gestion_utilisateurs.php">Gestion des utilisateurs</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Création Référentiel</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Gestion des Droits</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Maintenance</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownGestion" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Gestion
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdownGestion">
+                                <li><a class="dropdown-item" href="gestion_utilisateurs.php">Gestion des utilisateurs</a></li>
+                                <li><a class="dropdown-item" href="referentiel.php">Gestion référentiel</a></li>
+                            </ul>
                         </li>
                     <?php elseif ($user['role'] == 'formateur'): ?>
                         <li class="nav-item">
@@ -147,5 +144,7 @@ function getDefaultPhoto($sexe) {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <?php include 'footer.php'; ?>
+
 </body>
 </html>

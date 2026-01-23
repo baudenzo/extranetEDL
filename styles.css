@@ -3,6 +3,17 @@ body {
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     min-height: 100vh;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+html {
+    overflow-x: hidden;
+}
+
+.container {
+    flex: 1;
 }
 
 .waves{
@@ -164,3 +175,48 @@ body {
 /* couleur principale : #199ea3 - bleu
 couleur secondaire : #7cc8cb - autre bleu
 couleur tertiaire : #ffffff - blanc */
+
+/* Footer avec vagues */
+.waves-footer {
+    position: relative;
+    width: 100%;
+    height: 120px;
+    margin-top: 80px;
+    transform: scaleY(-1);
+}
+
+.waves-footer svg {
+    position: relative;
+    display: block;
+    width: calc(100% + 1.3px);
+    height: 120px;
+}
+
+.footer-custom {
+    background-color: #199ea3 !important;
+    color: white;
+    margin-top: -7px;
+    padding-top: 30px;
+}
+
+.footer-custom h5 {
+    color: white;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.footer-custom a {
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.footer-custom a:hover {
+    color: #7cc8cb;
+}
+
+.footer-custom .btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: white;
+    color: white;
+    transform: translateY(-2px);
+}

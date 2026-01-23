@@ -132,31 +132,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $password = trim($passwords[$id] ?? '');
                 
                 if ($id > 0 && $email && $prenom && $nom && $numlogin && $role && $sexe) {
-                    if ($password !== '') {
-                        $stmt = $pdo->prepare('UPDATE utilisateurs SET email = :email, prenom = :prenom, nom = :nom, numlogin = :numlogin, role = :role, sexe = :sexe, password = SHA2(:password, 256) WHERE id = :id');
-                        $stmt->execute([
-                            'email' => $email,
-                            'prenom' => $prenom,
-                            'nom' => $nom,
-                            'numlogin' => $numlogin,
-                            'role' => $role,
-                            'sexe' => $sexe,
-                            'password' => $password,
-                            'id' => $id,
-                        ]);
-                    } else {
-                        $stmt = $pdo->prepare('UPDATE utilisateurs SET email = :email, prenom = :prenom, nom = :nom, numlogin = :numlogin, role = :role, sexe = :sexe WHERE id = :id');
-                        $stmt->execute([
-                            'email' => $email,
-                            'prenom' => $prenom,
-                            'nom' => $nom,
-                            'numlogin' => $numlogin,
-                            'role' => $role,
-                            'sexe' => $sexe,
-                            'id' => $id,
-                        ]);
+                    // Récupérer les valeurs actuelles
+                    $stmt_current = $pdo->prepare('SELECT email, prenom, nom, numlogin, role, sexe FROM utilisateurs WHERE id = :id');
+                    $stmt_current->execute(['id' => $id]);
+                    $current = $stmt_current->fetch(PDO::FETCH_ASSOC);
+                    
+                    if ($current) {
+                        // Vérifier si quelque chose a changé (hors mot de passe)
+                        $hasChanged = ($current['email'] !== $email || 
+                                      $current['prenom'] !== $prenom || 
+                                      $current['nom'] !== $nom || 
+                                      $current['numlogin'] !== $numlogin || 
+                                      $current['role'] !== $role || 
+                                      $current['sexe'] !== $sexe ||
+                                      $password !== '');
+                        
+                        if ($hasChanged) {
+                            if ($password !== '') {
+                                $stmt = $pdo->prepare('UPDATE utilisateurs SET email = :email, prenom = :prenom, nom = :nom, numlogin = :numlogin, role = :role, sexe = :sexe, password = SHA2(:password, 256) WHERE id = :id');
+                                $stmt->execute([
+                                    'email' => $email,
+                                    'prenom' => $prenom,
+                                    'nom' => $nom,
+                                    'numlogin' => $numlogin,
+                                    'role' => $role,
+                                    'sexe' => $sexe,
+                                    'password' => $password,
+                                    'id' => $id,
+                                ]);
+                            } else {
+                                $stmt = $pdo->prepare('UPDATE utilisateurs SET email = :email, prenom = :prenom, nom = :nom, numlogin = :numlogin, role = :role, sexe = :sexe WHERE id = :id');
+                                $stmt->execute([
+                                    'email' => $email,
+                                    'prenom' => $prenom,
+                                    'nom' => $nom,
+                                    'numlogin' => $numlogin,
+                                    'role' => $role,
+                                    'sexe' => $sexe,
+                                    'id' => $id,
+                                ]);
+                            }
+                            $updateCount++;
+                        }
                     }
-                    $updateCount++;
                 }
             }
             $feedback = $updateCount > 0 ? "$updateCount utilisateur(s) mis à jour." : 'Aucune modification effectuée.';
@@ -251,10 +269,15 @@ if ($q !== '') {
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link" href="dashboard.php">Accueil</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="gestion_utilisateurs.php">Gestion des utilisateurs</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Création Référentiel</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Gestion des Droits</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Maintenance</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle active" href="#" id="navbarDropdownGestion" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Gestion
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownGestion">
+                            <li><a class="dropdown-item" href="gestion_utilisateurs.php">Gestion des utilisateurs</a></li>
+                            <li><a class="dropdown-item" href="referentiel.php">Gestion référentiel</a></li>
+                        </ul>
+                    </li>
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item"><a class="nav-link" href="index.php">Déconnexion</a></li>
@@ -443,5 +466,7 @@ if ($q !== '') {
             });
         });
     </script>
+    <?php include 'footer.php'; ?>
+
 </body>
 </html>
