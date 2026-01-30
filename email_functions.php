@@ -35,18 +35,18 @@ function envoyerEmailResetPassword($destinataire_email, $destinataire_nom, $toke
         $mail->addAddress($destinataire_email, $destinataire_nom);
         
         $mail->isHTML(true);
-        $mail->Subject = 'Réinitialisation de votre mot de passe - EDL';
+        $mail->Subject = 'Réinitialisation de votre mot de passe - EDL+';
         
         $reset_link = BASE_URL . '/reset_password.php?token=' . urlencode($token);
         
         $mail->Body = "
         <html>
         <body>
-            <h1>EDL - Réinitialisation de mot de passe</h1>
+            <h1>EDL+ - Réinitialisation de mot de passe</h1>
             
             <p>Bonjour <strong>" . htmlspecialchars($destinataire_nom) . "</strong>,</p>
             
-            <p>Nous avons reçu une demande de réinitialisation de mot de passe pour votre compte EDL.</p>
+            <p>Nous avons reçu une demande de réinitialisation de mot de passe pour votre compte EDL+.</p>
             
             <p>Pour réinitialiser votre mot de passe, cliquez sur le lien ci-dessous :</p>
             

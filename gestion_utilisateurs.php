@@ -250,7 +250,7 @@ if ($q !== '') {
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Gestion des utilisateurs</title>
+    <title>Gestion des utilisateurs - EDL+</title>
     <link rel="icon" type="image/png" href="img/logo.png"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -349,7 +349,7 @@ if ($q !== '') {
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="envoyer_email" value="1" id="envoyerEmail">
                             <label class="form-check-label" for="envoyerEmail">
-                                📧 Envoyer les identifiants par email à l'utilisateur
+                                Envoyer les identifiants par email à l'utilisateur
                             </label>
                         </div>
                     </div>
@@ -374,62 +374,139 @@ if ($q !== '') {
             <div class="card-body">
                 <form method="post">
                     <input type="hidden" name="action" value="update_all">
-                    <div class="table-responsive">
-                        <table class="table table-striped align-middle">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Photo</th>
-                                    <th>Email</th>
-                                    <th>Prénom</th>
-                                    <th>Nom</th>
-                                    <th>Login</th>
-                                    <th>Rôle</th>
-                                    <th>Sexe</th>
-                                    <th>Mot de passe</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            <?php if (empty($users)): ?>
-                                <tr>
-                                    <td colspan="10" class="text-center">Aucun utilisateur trouvé<?php echo $q !== '' ? ' pour la recherche "' . htmlspecialchars($q) . '"' : ''; ?>.</td>
-                                </tr>
-                            <?php endif; ?>
-                            <?php foreach ($users as $u): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($u['id']); ?><input type="hidden" name="ids[]" value="<?php echo htmlspecialchars($u['id']); ?>"></td>
-                                    <td><img src="<?php echo htmlspecialchars($u['photo'] ?: 'pp/default.jpg'); ?>" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;"></td>
-                                    <td><input type="email" name="emails[<?php echo $u['id']; ?>]" class="form-control" value="<?php echo htmlspecialchars($u['email']); ?>" required></td>
-                                    <td><input type="text" name="prenoms[<?php echo $u['id']; ?>]" class="form-control" value="<?php echo htmlspecialchars($u['prenom']); ?>" style="max-width: 100px;" required></td>
-                                    <td><input type="text" name="noms[<?php echo $u['id']; ?>]" class="form-control" value="<?php echo htmlspecialchars($u['nom']); ?>" style="max-width: 130px;" required></td>
-                                    <td><input type="text" name="numlogins[<?php echo $u['id']; ?>]" class="form-control" value="<?php echo htmlspecialchars($u['numlogin']); ?>" style="max-width: 160px;" required></td>
-                                    <td>
-                                        <select name="roles[<?php echo $u['id']; ?>]" class="form-select" required>
-                                            <option value="admin" <?php echo $u['role']==='admin'?'selected':''; ?>>Admin</option>
-                                            <option value="formateur" <?php echo $u['role']==='formateur'?'selected':''; ?>>Formateur</option>
-                                            <option value="stagiaire OP" <?php echo $u['role']==='stagiaire OP'?'selected':''; ?>>Stagiaire OP</option>
-                                            <option value="stagiaire FPC" <?php echo $u['role']==='stagiaire FPC'?'selected':''; ?>>Stagiaire FPC</option>
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <select name="sexes[<?php echo $u['id']; ?>]" class="form-select" style="min-width: 110px;" required>
-                                            <option value="masculin" <?php echo $u['sexe']==='masculin'?'selected':''; ?>>Masculin</option>
-                                            <option value="feminin" <?php echo $u['sexe']==='feminin'?'selected':''; ?>>Féminin</option>
-                                            <option value="autre" <?php echo $u['sexe']==='autre'?'selected':''; ?>>Autre</option>
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <input type="password" name="passwords[<?php echo $u['id']; ?>]" class="form-control" placeholder="Optionnel" style="max-width:150px;">
-                                    </td>
-                                    <td>
-                                        <button type="button" class="btn btn-danger btn-sm delete-user-btn" style="width: 110px;" data-user-id="<?php echo $u['id']; ?>">Supprimer</button>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                    
+                    <!-- Vue tableau pour desktop -->
+                    <div class="d-none d-md-block">
+                        <div class="table-responsive">
+                            <table class="table table-striped align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Photo</th>
+                                        <th>Email</th>
+                                        <th>Prénom</th>
+                                        <th>Nom</th>
+                                        <th>Login</th>
+                                        <th>Rôle</th>
+                                        <th>Sexe</th>
+                                        <th>Mot de passe</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                <?php if (empty($users)): ?>
+                                    <tr>
+                                        <td colspan="10" class="text-center">Aucun utilisateur trouvé<?php echo $q !== '' ? ' pour la recherche "' . htmlspecialchars($q) . '"' : ''; ?>.</td>
+                                    </tr>
+                                <?php endif; ?>
+                                <?php foreach ($users as $u): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($u['id']); ?><input type="hidden" name="ids[]" value="<?php echo htmlspecialchars($u['id']); ?>"></td>
+                                        <td><img src="<?php echo htmlspecialchars($u['photo'] ?: 'pp/default.jpg'); ?>" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;"></td>
+                                        <td><input type="email" name="emails[<?php echo $u['id']; ?>]" class="form-control" value="<?php echo htmlspecialchars($u['email']); ?>" required></td>
+                                        <td><input type="text" name="prenoms[<?php echo $u['id']; ?>]" class="form-control" value="<?php echo htmlspecialchars($u['prenom']); ?>" style="max-width: 100px;" required></td>
+                                        <td><input type="text" name="noms[<?php echo $u['id']; ?>]" class="form-control" value="<?php echo htmlspecialchars($u['nom']); ?>" style="max-width: 130px;" required></td>
+                                        <td><input type="text" name="numlogins[<?php echo $u['id']; ?>]" class="form-control" value="<?php echo htmlspecialchars($u['numlogin']); ?>" style="max-width: 160px;" required></td>
+                                        <td>
+                                            <select name="roles[<?php echo $u['id']; ?>]" class="form-select" required>
+                                                <option value="admin" <?php echo $u['role']==='admin'?'selected':''; ?>>Admin</option>
+                                                <option value="formateur" <?php echo $u['role']==='formateur'?'selected':''; ?>>Formateur</option>
+                                                <option value="stagiaire OP" <?php echo $u['role']==='stagiaire OP'?'selected':''; ?>>Stagiaire OP</option>
+                                                <option value="stagiaire FPC" <?php echo $u['role']==='stagiaire FPC'?'selected':''; ?>>Stagiaire FPC</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select name="sexes[<?php echo $u['id']; ?>]" class="form-select" style="min-width: 110px;" required>
+                                                <option value="masculin" <?php echo $u['sexe']==='masculin'?'selected':''; ?>>Masculin</option>
+                                                <option value="feminin" <?php echo $u['sexe']==='feminin'?'selected':''; ?>>Féminin</option>
+                                                <option value="autre" <?php echo $u['sexe']==='autre'?'selected':''; ?>>Autre</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="password" name="passwords[<?php echo $u['id']; ?>]" class="form-control" placeholder="Optionnel" style="max-width:150px;">
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-danger btn-sm delete-user-btn" style="width: 110px;" data-user-id="<?php echo $u['id']; ?>">Supprimer</button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
+                    
+                    <!-- Vue cartes pour mobile -->
+                    <div class="d-md-none">
+                        <?php if (empty($users)): ?>
+                            <div class="alert alert-info text-center">
+                                Aucun utilisateur trouvé<?php echo $q !== '' ? ' pour la recherche "' . htmlspecialchars($q) . '"' : ''; ?>.
+                            </div>
+                        <?php endif; ?>
+                        
+                        <?php foreach ($users as $u): ?>
+                            <div class="card mb-3 shadow-sm">
+                                <div class="card-body">
+                                    <input type="hidden" name="ids[]" value="<?php echo htmlspecialchars($u['id']); ?>">
+                                    
+                                    <div class="text-center mb-3">
+                                        <img src="<?php echo htmlspecialchars($u['photo'] ?: 'pp/default.jpg'); ?>" alt="" style="width:80px;height:80px;border-radius:50%;object-fit:cover;">
+                                        <p class="mt-2 mb-0 fw-bold">ID: <?php echo htmlspecialchars($u['id']); ?></p>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Email</label>
+                                        <input type="email" name="emails[<?php echo $u['id']; ?>]" class="form-control" value="<?php echo htmlspecialchars($u['email']); ?>" required>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-6">
+                                            <label class="form-label fw-bold">Prénom</label>
+                                            <input type="text" name="prenoms[<?php echo $u['id']; ?>]" class="form-control" value="<?php echo htmlspecialchars($u['prenom']); ?>" required>
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label fw-bold">Nom</label>
+                                            <input type="text" name="noms[<?php echo $u['id']; ?>]" class="form-control" value="<?php echo htmlspecialchars($u['nom']); ?>" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Login</label>
+                                        <input type="text" name="numlogins[<?php echo $u['id']; ?>]" class="form-control" value="<?php echo htmlspecialchars($u['numlogin']); ?>" required>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-6">
+                                            <label class="form-label fw-bold">Rôle</label>
+                                            <select name="roles[<?php echo $u['id']; ?>]" class="form-select" required>
+                                                <option value="admin" <?php echo $u['role']==='admin'?'selected':''; ?>>Admin</option>
+                                                <option value="formateur" <?php echo $u['role']==='formateur'?'selected':''; ?>>Formateur</option>
+                                                <option value="stagiaire OP" <?php echo $u['role']==='stagiaire OP'?'selected':''; ?>>Stagiaire OP</option>
+                                                <option value="stagiaire FPC" <?php echo $u['role']==='stagiaire FPC'?'selected':''; ?>>Stagiaire FPC</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label fw-bold">Sexe</label>
+                                            <select name="sexes[<?php echo $u['id']; ?>]" class="form-select" required>
+                                                <option value="masculin" <?php echo $u['sexe']==='masculin'?'selected':''; ?>>Masculin</option>
+                                                <option value="feminin" <?php echo $u['sexe']==='feminin'?'selected':''; ?>>Féminin</option>
+                                                <option value="autre" <?php echo $u['sexe']==='autre'?'selected':''; ?>>Autre</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Nouveau mot de passe (optionnel)</label>
+                                        <input type="password" name="passwords[<?php echo $u['id']; ?>]" class="form-control" placeholder="Laisser vide pour ne pas modifier">
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <button type="button" class="btn btn-danger delete-user-btn" data-user-id="<?php echo $u['id']; ?>">Supprimer cet utilisateur</button>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    
                     <?php if (!empty($users)): ?>
                         <div class="text-end mt-3">
                             <button type="submit" class="btn btn-success" style="min-width: 200px;">Sauvegarder toutes les modifications</button>

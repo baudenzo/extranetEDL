@@ -1,6 +1,6 @@
 <?php
 // Configuration pour l'upload de fichiers
-// EDL - École des Langues Grand Calais
+// EDL+ - École des Langues Grand Calais
 
 // Taille maximale par type de fichier (en octets)
 define('MAX_SIZE_AUDIO', 50 * 1024 * 1024);    // 50 MB

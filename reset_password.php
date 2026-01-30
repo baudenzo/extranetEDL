@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>EDL - Nouveau mot de passe</title>
+    <title>EDL+ - Nouveau mot de passe</title>
     <link rel="icon" type="image/png" href="img/logo.png"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -78,7 +78,7 @@ if (isset($_POST['new_password']) && isset($_POST['token'])) {
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6 text-center mt-5">
-                <a href="index.php"><img src="img/logo.png" alt="Logo EDL" class="logo img-fluid mb-4" style="max-width: 180px;"></a>
+                <a href="index.php"><img src="img/logo.png" alt="Logo EDL+" class="logo img-fluid mb-4" style="max-width: 180px;"></a>
                 <h1 class="mb-3">Nouveau mot de passe</h1>
                 <?php if ($token_valid && !$success): ?>
                     <p class="text-muted mb-5">Choisissez votre nouveau mot de passe</p>

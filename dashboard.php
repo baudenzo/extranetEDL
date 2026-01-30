@@ -45,7 +45,7 @@ function getDefaultPhoto($sexe) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - EDL</title>
+    <title>Dashboard - EDL+</title>
     <link rel="icon" type="image/png" href="img/logo.png"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -96,13 +96,21 @@ function getDefaultPhoto($sexe) {
                         </li>
                     <?php elseif ($user['role'] == 'stagiaire FPC'): ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Mes Documents</a>
+                            <a class="nav-link" href="mes_documents.php">Mes Documents</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#">Mes Ressources</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Émargement</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownDistanciel" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Distanciel
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdownDistanciel">
+                                <li><a class="dropdown-item" href="#">Émargement</a></li>
+                                <li><a class="dropdown-item" href="#">Évaluation des acquis</a></li>
+                                <li><a class="dropdown-item" href="#">Questionnaire de satisfaction</a></li>
+                                <li><a class="dropdown-item" href="#">Lien Teams</a></li>
+                            </ul>
                         </li>
                     <?php endif; ?>
                 </ul>
@@ -136,6 +144,3 @@ function getDefaultPhoto($sexe) {
 
 </body>
 </html>
-
-
-<!-- CRUD -->

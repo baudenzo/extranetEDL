@@ -1,3 +1,29 @@
+<!-- Section Nos Partenaires -->
+<section class="partenaires-section bg-white py-6">
+    <div class="container">
+        <div class="row align-items-stretch justify-content-center g-0">
+            <div class="col-12 col-md-8 d-flex flex-column justify-content-center align-items-center partenaires-col-gauche">
+                <h4 class="text-center mb-3" style="color: #199ea3; font-weight: 600;">Nos financeurs</h4>
+                <div class="d-flex flex-row justify-content-center align-items-center gap-4 flex-nowrap partenaires-logos-ligne">
+                    <img src="fournisseurs/calais.jpg" alt="Calais" class="img-fluid partenaire-logo">
+                    <img src="fournisseurs/grandcalaisterreetmer.png" alt="Grand Calais Terre & Mer" class="img-fluid partenaire-logo">
+                    <img src="fournisseurs/citeeducative.png" alt="Les Cité Éducatives" class="img-fluid partenaire-logo">
+                    <img src="fournisseurs/quartiers2030.jpg" alt="Quartiers 2030" class="img-fluid partenaire-logo">
+                    <img src="fournisseurs/prefet.png" alt="Préfet du Pas-de-Calais" class="img-fluid partenaire-logo">
+                </div>
+            </div>
+            <div class="col-12 col-md-4 d-flex flex-column justify-content-center align-items-center partenaires-col-droite position-relative">
+                <div class="partenaires-separateur-vertical d-none d-md-block"></div>
+                <h4 class="text-center mb-3" style="color: #199ea3; font-weight: 600;">Nos Certifications</h4>
+                <div class="d-flex flex-row justify-content-center align-items-center gap-4 flex-nowrap partenaires-logos-ligne">
+                    <img src="fournisseurs/qualiopi.png" alt="Qualiopi" class="img-fluid partenaire-logo">
+                    <img src="fournisseurs/cloe.png" alt="CLOE" class="img-fluid partenaire-logo">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <div class="waves-footer">
     <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
         <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="#199ea3"></path>

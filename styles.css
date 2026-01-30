@@ -220,3 +220,122 @@ couleur tertiaire : #ffffff - blanc */
     color: white;
     transform: translateY(-2px);
 }
+
+/* style pour toute la bande blanche des partenaires */
+.partenaires-section {
+    border-radius: 2rem; /* Arrondir les coins de la section */
+    box-shadow: 0 6px 24px 0 rgba(25, 158, 163, 0.10), 0 2px 8px 0 rgba(0,0,0,0.08); /* ombre à l'arrière */
+    margin-left: auto; /* permet de centrer horizontalement */
+    margin-right: auto; /* permet de centrer horizontalement */
+    margin-bottom: 2rem; /* espace en bas de la section */
+    margin-top: 2rem; /* espace en haut de la section */
+    max-width: 1800px; /* largeur maximale de la section */
+    width: 100%; /* occupe toute la largeur disponible */
+    min-height: 210px; /* hauteur minimale */
+    border: none; /* pas de bordure */
+    display: flex; /* utiliser flexbox pour la mise en page */
+    align-items: stretch; /* étirer les colonnes pour qu'elles aient la même hauteur */
+    justify-content: center; /* centrer horizontalement les colonnes */
+}
+
+/* styles pour les colonnes gauche et droite */
+.partenaires-col-gauche, .partenaires-col-droite {
+    min-height: 210px; /* hauteur minimale pour correspondre à la section */
+    padding: 1.5rem; /* espace intérieur */
+    position: relative; /* pour le séparateur vertical */
+    display: flex; /* utiliser flexbox pour la mise en page */
+    flex-direction: column; /* empiler les éléments verticalement */
+    align-items: center; /* centrer horizontalement */
+    justify-content: center; /* centrer verticalement */
+    text-align: center; /* centrer le texte */
+    height: 100%; /* occupe toute la hauteur disponible */
+}
+
+/* styles pour la ligne des logos */
+.partenaires-logos-ligne {
+    width: 100%; /* occupe toute la largeur disponible */
+    flex-wrap: nowrap !important; /* empêcher le retour à la ligne */
+    justify-content: center !important; /* centrer horizontalement */
+    align-items: center !important; /* centrer verticalement */
+    gap: 2.5vw; /* espace entre les logos */
+    margin-left: auto; /* centrer horizontalement */
+    margin-right: auto; /* centrer horizontalement */
+}
+
+/* style pour le séparateur vertical entre les deux colonnes */
+.partenaires-separateur-vertical {
+    position: absolute; /* positionnement absolu qui permet de positionner précisément le séparateur */
+    left: 0; /* aligner à gauche de la colonne droite */
+    top: 20%; /* 20% depuis le haut */
+    bottom: 20%; /* 20% depuis le bas */
+    width: 1.5px; /* largeur du séparateur */
+    background: #e0e0e0; /* couleur gris clair */
+    height: 60%; /* hauteur du séparateur */
+    z-index: 2; /* positionner au-dessus des autres éléments */ 
+    margin-left: -1.5px; /* se décaler légèrement vers la gauche pour être centré */
+}
+
+/* styles pour les colonnes gauche et droite */
+.partenaires-col-droite {
+    border-top-right-radius: 2rem; /* Arrondir le coin supérieur droit */
+    border-bottom-right-radius: 2rem; /* Arrondir le coin inférieur droit */
+}
+.partenaires-col-gauche {
+    border-top-left-radius: 2rem; /* Arrondir le coin supérieur gauche */
+    border-bottom-left-radius: 2rem; /* Arrondir le coin inférieur gauche */
+}
+
+.partenaires-logos-ligne {
+    width: 100%; /* occupe toute la largeur disponible */
+    flex-wrap: nowrap !important; /* empêcher le retour à la ligne */
+    justify-content: center !important; /* centrer horizontalement */
+    gap: 2.5vw; /* espace entre les logos */
+}
+
+/* styles pour les logos des partenaires */
+.partenaire-logo {
+    max-height: 70px; /* hauteur maximale */
+    max-width: 120px; /* largeur maximale */
+    width: auto; /* largeur automatique pour conserver les proportions */
+    height: auto; /* hauteur automatique pour conserver les proportions */
+    object-fit: contain; /* conserver les proportions de l'image */
+    transition: transform 0.3s ease, opacity 0.3s ease; /* transition douce pour les effets */
+    filter: grayscale(0%); /* pas de filtre gris */
+    flex-shrink: 1; /* permettre aux logos de rétrécir si nécessaire */
+}
+
+/* styles pour les logos des partenaires sur mobile */
+@media (max-width: 1200px) {
+    .partenaire-logo {
+        max-height: 55px;
+        max-width: 90px;
+    }
+}
+@media (max-width: 900px) {
+    .partenaire-logo {
+        max-height: 40px;
+        max-width: 65px;
+    }
+}
+
+/* effets quand on passe sur les logos */
+.partenaire-logo {
+    max-height: 80px;
+    max-width: 150px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    filter: grayscale(0%);
+}
+
+.partenaire-logo:hover {
+    transform: scale(1.05); /* agrandir légèrement */
+    opacity: 0.8; /* réduire l'opacité */
+}
+
+@media (max-width: 768px) {
+    .partenaire-logo {
+        max-height: 60px;
+    }
+}

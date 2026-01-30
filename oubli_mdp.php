@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>EDL - Réinitialisation du mot de passe</title>
+    <title>EDL+ - Réinitialisation du mot de passe</title>
     <link rel="icon" type="image/png" href="img/logo.png"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -46,7 +46,7 @@ if (isset($_POST['email'])) {
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6 text-center mt-5">
-                <a href="index.php"><img src="img/logo.png" alt="Logo EDL" class="logo img-fluid mb-4" style="max-width: 180px;"></a>
+                <a href="index.php"><img src="img/logo.png" alt="Logo EDL+" class="logo img-fluid mb-4" style="max-width: 180px;"></a>
                 <h1 class="mb-3">Mot de passe oublié ?</h1>
                 <p class="text-muted mb-5">Entrez votre adresse email pour recevoir un lien de réinitialisation</p>
             </div>
@@ -66,7 +66,7 @@ if (isset($_POST['email'])) {
                             <?php echo $success; ?>
                         </div>
                         <div class="alert alert-info mt-3">
-                            <strong>📧 Prochaines étapes :</strong>
+                            <strong>Prochaines étapes :</strong>
                             <ul class="mb-0 mt-2">
                                 <li>Vérifiez votre boîte de réception</li>
                                 <li>Vérifiez aussi vos spams</li>
@@ -81,7 +81,7 @@ if (isset($_POST['email'])) {
                             <div class="form-group mb-3">
                                 <label for="email">Adresse email :</label>
                                 <input type="email" class="form-control" id="email" name="email" required autofocus placeholder="votre-email@exemple.com">
-                                <small class="form-text text-muted">L'email associé à votre compte EDL</small>
+                                <small class="form-text text-muted">L'email associé à votre compte EDL+</small>
                             </div>
                             
                             <div class="text-center mt-4">

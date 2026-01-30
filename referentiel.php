@@ -57,45 +57,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $feedback = 'Contenu créé avec succès !';
             
-        } elseif ($action === 'update_all') {
-            // Mise à jour multiple
-            $codes = $_POST['codes'] ?? [];
-            $modules = $_POST['modules'] ?? [];
-            $contenus = $_POST['contenus'] ?? [];
-            $niveaux_sets = $_POST['niveaux_sets'] ?? [];
+        } elseif ($action === 'update_single') {
+            // Mise à jour d'une seule ligne
+            $code = trim($_POST['code'] ?? '');
+            $module = trim($_POST['module'] ?? '');
+            $contenu = trim($_POST['contenu'] ?? '');
+            $niveaux_array = $_POST['niveaux'] ?? [];
             
-            $updateCount = 0;
-            foreach ($codes as $code) {
-                $code = trim($code);
-                $module = trim($modules[$code] ?? '');
-                $contenu = trim($contenus[$code] ?? '');
-                $niveaux_array = $niveaux_sets[$code] ?? [];
-                
-                if ($code && $module && $contenu) {
-                    // Récupérer les valeurs actuelles
-                    $stmt_current = $pdo->prepare('SELECT module, contenu, niveaux FROM referentiel WHERE code = :code');
-                    $stmt_current->execute(['code' => $code]);
-                    $current = $stmt_current->fetch(PDO::FETCH_ASSOC);
-                    
-                    if ($current) {
-                        $niveaux = !empty($niveaux_array) ? implode(',', $niveaux_array) : null;
-                        
-                        // Vérifier si quelque chose a vraiment changé
-                        if ($current['module'] !== $module || $current['contenu'] !== $contenu || $current['niveaux'] !== $niveaux) {
-                            $stmt = $pdo->prepare('UPDATE referentiel SET module = :module, contenu = :contenu, niveaux = :niveaux WHERE code = :code');
-                            $stmt->execute([
-                                'module' => $module,
-                                'contenu' => $contenu,
-                                'niveaux' => $niveaux,
-                                'code' => $code
-                            ]);
-                            $updateCount++;
-                        }
-                    }
-                }
+            if (!$code || !$module || !$contenu) {
+                throw new Exception('Le code, le module et le contenu sont requis.');
             }
             
-            $feedback = $updateCount > 0 ? "$updateCount contenu(s) mis à jour." : 'Aucune modification effectuée.';
+            // Récupérer les valeurs actuelles
+            $stmt_current = $pdo->prepare('SELECT module, contenu, niveaux FROM referentiel WHERE code = :code');
+            $stmt_current->execute(['code' => $code]);
+            $current = $stmt_current->fetch(PDO::FETCH_ASSOC);
+            
+            if ($current) {
+                $niveaux = !empty($niveaux_array) ? implode(',', $niveaux_array) : null;
+                
+                // Vérifier si quelque chose a vraiment changé
+                if ($current['module'] !== $module || $current['contenu'] !== $contenu || $current['niveaux'] !== $niveaux) {
+                    $stmt = $pdo->prepare('UPDATE referentiel SET module = :module, contenu = :contenu, niveaux = :niveaux WHERE code = :code');
+                    $stmt->execute([
+                        'module' => $module,
+                        'contenu' => $contenu,
+                        'niveaux' => $niveaux,
+                        'code' => $code
+                    ]);
+                    $feedback = 'Contenu mis à jour avec succès !';
+                } else {
+                    $feedback = 'Aucune modification détectée.';
+                }
+            } else {
+                throw new Exception('Code non trouvé dans le référentiel.');
+            }
             
         } elseif ($action === 'delete') {
             $code = trim($_POST['code'] ?? '');
@@ -180,7 +176,7 @@ function getDefaultPhoto($sexe) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Référentiel Pédagogique - EDL</title>
+    <title>Référentiel Pédagogique - EDL+</title>
     <link rel="icon" type="image/png" href="img/logo.png"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
@@ -384,31 +380,32 @@ function getDefaultPhoto($sexe) {
         </div>
             <div class="card-body">
                 <?php if (count($referentiels) > 0): ?>
-                    <form method="post">
-                        <input type="hidden" name="action" value="update_all">
-                        <div class="table-responsive">
-                            <table class="table table-striped align-middle">
-                                <thead>
+                    <!-- Vue tableau pour desktop -->
+                    <div class="d-none d-md-block">
+                        <table class="table table-striped align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 15%;">Module</th>
+                                    <th style="width: 10%;">Code</th>
+                                    <th style="width: 35%;">Contenu</th>
+                                    <th style="width: 18%;">Niveaux</th>
+                                    <th style="width: 22%;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php 
+                                $current_module = '';
+                                foreach ($referentiels as $ref): 
+                                    $show_module = ($current_module !== $ref['module']);
+                                    $current_module = $ref['module'];
+                                    $niveaux_array = $ref['niveaux'] ? explode(',', $ref['niveaux']) : [];
+                                ?>
                                     <tr>
-                                        <th style="width: 15%;">Module</th>
-                                        <th style="width: 10%;">Code</th>
-                                        <th style="width: 45%;">Contenu</th>
-                                        <th style="width: 20%;">Niveaux</th>
-                                        <th style="width: 10%;">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php 
-                                    $current_module = '';
-                                    foreach ($referentiels as $ref): 
-                                        $show_module = ($current_module !== $ref['module']);
-                                        $current_module = $ref['module'];
-                                        $niveaux_array = $ref['niveaux'] ? explode(',', $ref['niveaux']) : [];
-                                    ?>
-                                        <tr>
+                                        <form method="post" class="contents">
+                                            <input type="hidden" name="action" value="update_single">
+                                            <input type="hidden" name="code" value="<?php echo htmlspecialchars($ref['code']); ?>">
                                             <td>
-                                                <input type="hidden" name="codes[]" value="<?php echo htmlspecialchars($ref['code']); ?>">
-                                                <select name="modules[<?php echo htmlspecialchars($ref['code']); ?>]" class="form-select" required>
+                                                <select name="module" class="form-select" required>
                                                     <option value="Bases" <?php echo $ref['module']==='Bases'?'selected':''; ?>>Bases</option>
                                                     <option value="Conjugaison" <?php echo $ref['module']==='Conjugaison'?'selected':''; ?>>Conjugaison</option>
                                                     <option value="Grammaire" <?php echo $ref['module']==='Grammaire'?'selected':''; ?>>Grammaire</option>
@@ -420,30 +417,85 @@ function getDefaultPhoto($sexe) {
                                             </td>
                                             <td><strong><?php echo htmlspecialchars($ref['code']); ?></strong></td>
                                             <td>
-                                                <input type="text" name="contenus[<?php echo htmlspecialchars($ref['code']); ?>]" class="form-control" value="<?php echo htmlspecialchars($ref['contenu']); ?>" required>
+                                                <input type="text" name="contenu" class="form-control" value="<?php echo htmlspecialchars($ref['contenu']); ?>" required>
                                             </td>
                                             <td>
-                                                <div class="d-flex flex-wrap gap-2">
+                                                <div class="d-flex flex-nowrap gap-1">
                                                     <?php foreach(['A1','A2','B1','B2','C1','C2'] as $niveau): ?>
-                                                        <div class="form-check form-check-inline">
-                                                            <input class="form-check-input" type="checkbox" name="niveaux_sets[<?php echo htmlspecialchars($ref['code']); ?>][]" value="<?php echo $niveau; ?>" id="niveau_<?php echo htmlspecialchars($ref['code']).'_'.$niveau; ?>" <?php echo in_array($niveau, $niveaux_array) ? 'checked' : ''; ?>>
+                                                        <div class="form-check form-check-inline mb-0">
+                                                            <input class="form-check-input" type="checkbox" name="niveaux[]" value="<?php echo $niveau; ?>" id="niveau_<?php echo htmlspecialchars($ref['code']).'_'.$niveau; ?>" <?php echo in_array($niveau, $niveaux_array) ? 'checked' : ''; ?>>
                                                             <label class="form-check-label small" for="niveau_<?php echo htmlspecialchars($ref['code']).'_'.$niveau; ?>"><?php echo $niveau; ?></label>
                                                         </div>
                                                     <?php endforeach; ?>
                                                 </div>
                                             </td>
                                             <td>
-                                                <button type="button" class="btn btn-danger btn-sm delete-ref-btn" data-code="<?php echo htmlspecialchars($ref['code']); ?>">Supprimer</button>
+                                                <button type="submit" class="btn btn-success me-2">Sauvegarder</button>
+                                                <button type="button" class="btn btn-danger delete-ref-btn" data-code="<?php echo htmlspecialchars($ref['code']); ?>">Supprimer</button>
                                             </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="text-end mt-3">
-                            <button type="submit" class="btn btn-success" style="min-width: 200px;">Sauvegarder toutes les modifications</button>
-                        </div>
-                    </form>
+                                        </form>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Vue cartes pour mobile -->
+                    <div class="d-md-none">
+                        <?php 
+                        foreach ($referentiels as $ref): 
+                            $niveaux_array = $ref['niveaux'] ? explode(',', $ref['niveaux']) : [];
+                        ?>
+                            <div class="card mb-3 shadow-sm">
+                                <div class="card-body">
+                                    <form method="post">
+                                        <input type="hidden" name="action" value="update_single">
+                                        <input type="hidden" name="code" value="<?php echo htmlspecialchars($ref['code']); ?>">
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Module</label>
+                                            <select name="module" class="form-select" required>
+                                                <option value="Bases" <?php echo $ref['module']==='Bases'?'selected':''; ?>>Bases</option>
+                                                <option value="Conjugaison" <?php echo $ref['module']==='Conjugaison'?'selected':''; ?>>Conjugaison</option>
+                                                <option value="Grammaire" <?php echo $ref['module']==='Grammaire'?'selected':''; ?>>Grammaire</option>
+                                                <option value="Prononciation" <?php echo $ref['module']==='Prononciation'?'selected':''; ?>>Prononciation</option>
+                                                <option value="Methodologie" <?php echo $ref['module']==='Methodologie'?'selected':''; ?>>Méthodologie</option>
+                                                <option value="Vocabulaire" <?php echo $ref['module']==='Vocabulaire'?'selected':''; ?>>Vocabulaire</option>
+                                                <option value="Au Quotidien" <?php echo $ref['module']==='Au Quotidien'?'selected':''; ?>>Au Quotidien</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Code</label>
+                                            <p class="mb-0"><strong><?php echo htmlspecialchars($ref['code']); ?></strong></p>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Contenu</label>
+                                            <input type="text" name="contenu" class="form-control" value="<?php echo htmlspecialchars($ref['contenu']); ?>" required>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Niveaux</label>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <?php foreach(['A1','A2','B1','B2','C1','C2'] as $niveau): ?>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" name="niveaux[]" value="<?php echo $niveau; ?>" id="niveau_mobile_<?php echo htmlspecialchars($ref['code']).'_'.$niveau; ?>" <?php echo in_array($niveau, $niveaux_array) ? 'checked' : ''; ?>>
+                                                        <label class="form-check-label" for="niveau_mobile_<?php echo htmlspecialchars($ref['code']).'_'.$niveau; ?>"><?php echo $niveau; ?></label>
+                                                    </div>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-success flex-fill">Sauvegarder</button>
+                                            <button type="button" class="btn btn-danger flex-fill delete-ref-btn" data-code="<?php echo htmlspecialchars($ref['code']); ?>">Supprimer</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
                 <?php else: ?>
                     <div class="alert alert-info">
                         <p>Aucun élément dans le référentiel pour le moment.</p>
