@@ -174,6 +174,7 @@ if (!$user) {
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdownGestion">
                                 <li><a class="dropdown-item" href="gestion_utilisateurs.php">Gestion des utilisateurs</a></li>
                                 <li><a class="dropdown-item" href="referentiel.php">Gestion référentiel</a></li>
+                                <li><a class="dropdown-item" href="gestion_liaisons.php">Gestion liaisons</a></li>
                             </ul>
                         </li>
                     <?php elseif ($user['role'] == 'formateur'): ?>

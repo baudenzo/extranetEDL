@@ -50,6 +50,13 @@ function getDefaultPhoto($sexe) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .card-clickable { cursor: pointer; }
+        .card-clickable:focus { outline: 2px solid #0d6efd; outline-offset: 2px; }
+        .document-tile { border-left: 4px solid #199ea3; transition: transform 0.18s, box-shadow 0.18s; }
+        .document-tile:hover { transform: translateY(-6px); box-shadow: 0 10px 25px rgba(0,0,0,0.12) !important; }
+        .document-tile .card-title { font-size: 0.95rem; font-weight:600; }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
@@ -78,6 +85,7 @@ function getDefaultPhoto($sexe) {
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdownGestion">
                                 <li><a class="dropdown-item" href="gestion_utilisateurs.php">Gestion des utilisateurs</a></li>
                                 <li><a class="dropdown-item" href="referentiel.php">Gestion référentiel</a></li>
+                                <li><a class="dropdown-item" href="gestion_liaisons.php">Gestion des liaisons</a></li>
                             </ul>
                         </li>
                     <?php elseif ($user['role'] == 'formateur'): ?>
@@ -130,8 +138,150 @@ function getDefaultPhoto($sexe) {
             <h1>Bienvenue sur votre espace <?php echo getRoleLabel('formateur', $user['sexe']); ?>, <?php echo $_SESSION['prenom']; ?> !</h1>
         <?php elseif ($_SESSION['role'] == 'stagiaire OP'): ?>
             <h1>Bienvenue sur votre espace Stagiaire OP, <?php echo $_SESSION['prenom']; ?> !</h1>
+
+            <div class="container mt-4">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card shadow-sm card-clickable" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#modalOPPresentation">
+                            <div class="card-header"><strong>Présentation du formateur</strong></div>
+                            <div class="card-body">
+                                <p>Consultez le profil et le parcours du formateur en charge de votre session.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card shadow-sm card-clickable" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#modalOPPlanning">
+                            <div class="card-header"><strong>Planning</strong></div>
+                            <div class="card-body">
+                                <p>Accédez au planning de vos séances (le jour indiqué dans l'intitulé de la session).</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card shadow-sm card-clickable" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#modalOPRessources">
+                            <div class="card-header"><strong>Ressources associées</strong></div>
+                            <div class="card-body">
+                                <p>Accès aux documents du référentiel liés à la thématique des séances réalisées.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         <?php elseif ($_SESSION['role'] == 'stagiaire FPC'): ?>
             <h1>Bienvenue sur votre espace Stagiaire FPC, <?php echo $_SESSION['prenom']; ?> !</h1>
+
+            <?php
+            // Récupérer les ressources visibles (récentes)
+            try {
+                $resStmt = $pdo->prepare('SELECT r.id, r.titre, r.description, r.chemin_fichier, r.uploader_id, u.prenom AS uploader_prenom, u.nom AS uploader_nom FROM ressources r LEFT JOIN utilisateurs u ON r.uploader_id = u.id WHERE r.visible = 1 ORDER BY r.id DESC LIMIT 12');
+                $resStmt->execute();
+                $ressources = $resStmt->fetchAll(PDO::FETCH_ASSOC);
+            } catch (Exception $e) {
+                $ressources = [];
+            }
+            // Documents disponibles (même configuration que dans mes_documents.php)
+            $documents = [
+                ['slug' => 'convention-contrat', 'titre' => 'Convention / Contrat', 'description' => 'Votre convention de formation ou contrat', 'couleur' => '#199ea3'],
+                ['slug' => 'guide-animation', 'titre' => 'Guide d\'animation', 'description' => 'Guide des activités et animations', 'couleur' => '#17a2b8'],
+                ['slug' => 'livret-accueil', 'titre' => 'Livret d\'accueil', 'description' => 'Informations pratiques et règlement', 'couleur' => '#28a745'],
+                ['slug' => 'catalogue-formations', 'titre' => 'Catalogue de formations', 'description' => 'Liste complète des formations disponibles', 'couleur' => '#ffc107'],
+                ['slug' => 'presentation-formateur', 'titre' => 'Présentation du formateur', 'description' => 'Profil et parcours de votre formateur', 'couleur' => '#6f42c1'],
+                ['slug' => 'registre-accessibilite', 'titre' => 'Registre d\'accessibilité', 'description' => 'Informations sur l\'accessibilité des locaux', 'couleur' => '#fd7e14'],
+                ['slug' => 'presentation-locaux', 'titre' => 'Présentation des locaux', 'description' => 'Plan et présentation des espaces', 'couleur' => '#e83e8c']
+            ];
+            // Mélanger et prendre 3 éléments aléatoires
+            shuffle($documents);
+            $rand_docs = array_slice($documents, 0, 3);
+            ?>
+
+            <div class="container mt-4">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card shadow-sm card-clickable" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#modalDocuments">
+                            <div class="card-header">
+                                <strong>Documents</strong>
+                            </div>
+                            <div class="card-body">
+                                <p>Documents fournis pour la formation (convention/contrat, guide d'animation, livret d'accueil, catalogue de formations, présentation du formateur, registre d'accessibilité, présentation des locaux).</p>
+                                <ul>
+                                    <li>Convention / Contrat</li>
+                                    <li>Guide d'animation</li>
+                                    <li>Livret d'accueil</li>
+                                    <li>Catalogue des formations</li>
+                                    <li>Présentation du formateur</li>
+                                    <li>Registre d'accessibilité</li>
+                                    <li>Présentation des locaux</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card shadow-sm card-clickable" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#modalRessources">
+                            <div class="card-header">
+                                <strong>Ressources pédagogiques</strong>
+                            </div>
+                            <div class="card-body">
+                                <p>Accès aux ressources importées par les formateurs et aux documents du référentiel en lien avec votre thématique.</p>
+                                <?php if (!empty($ressources)): ?>
+                                    <ul class="list-unstyled">
+                                        <?php foreach ($ressources as $r): ?>
+                                            <li class="mb-2">
+                                                <strong><?php echo htmlspecialchars($r['titre']); ?></strong>
+                                                <?php if (!empty($r['chemin_fichier'])): ?>
+                                                    - <a href="<?php echo htmlspecialchars($r['chemin_fichier']); ?>" target="_blank">Télécharger / Ouvrir</a>
+                                                <?php endif; ?>
+                                                <br><small class="text-muted">Par <?php echo htmlspecialchars(trim(($r['uploader_prenom'] . ' ' . $r['uploader_nom'])) ?: 'Formateur'); ?></small>
+                                            </li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                <?php else: ?>
+                                    <p class="text-muted">Aucune ressource disponible pour le moment.</p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mt-3">
+                    <div class="col-md-6">
+                        <div class="card shadow-sm card-clickable" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#modalDistanciel">
+                            <div class="card-header">
+                                <strong>Distanciel</strong>
+                            </div>
+                            <div class="card-body">
+                                <p>Si la session est en distanciel, utilisez les outils ci-dessous :</p>
+                                <div class="d-grid gap-2 d-md-flex">
+                                    <a class="btn btn-outline-primary" href="#">Émargement</a>
+                                    <a class="btn btn-outline-primary" href="#">Évaluation des acquis</a>
+                                    <a class="btn btn-outline-primary" href="#">Questionnaire de satisfaction (à chaud)</a>
+                                    <a class="btn btn-outline-primary" href="#">Lien Teams</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card shadow-sm card-clickable" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#modalSatisfaction">
+                            <div class="card-header">
+                                <strong>Satisfaction & Matériel</strong>
+                            </div>
+                            <div class="card-body">
+                                <p><a href="#">Questionnaire de satisfaction à froid</a> (envoyé après X jours).</p>
+                                <p>Matériel mis à disposition :</p>
+                                <ul>
+                                    <li>Ordinateur / Tablette</li>
+                                    <li>Supports papier</li>
+                                    <li>Projecteur</li>
+                                    <li>Connexion internet</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         <?php else: ?>
             <div class="alert alert-danger">
                 <p>Rôle non reconnu. Contactez l'administrateur/administratrice.</p>
@@ -139,8 +289,160 @@ function getDefaultPhoto($sexe) {
         <?php endif; ?>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <?php include 'footer.php'; ?>
+        <!-- Modals overview pour chaque rubrique -->
+        <div class="modal fade" id="modalDocuments" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header" style="background-color:#199ea3;color:#fff;">
+                        <h5 class="modal-title">Aperçu — Documents</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-2 fw-bold">Voici quelques uns de vos dossiers disponibles</p>
+                        <p class="text-muted small mb-3">Cliquez sur une vignette pour plus d'informations.</p>
+                        <div class="row g-3">
+                            <?php foreach ($rand_docs as $doc): ?>
+                                <div class="col-6 col-md-4">
+                                    <a href="mes_documents.php?open=<?php echo urlencode($doc['slug']); ?>" class="card document-tile h-100 text-decoration-none text-body">
+                                        <div class="card-body text-center py-3">
+                                            <h6 class="card-title" style="color:<?php echo $doc['couleur']; ?>;"><?php echo htmlspecialchars($doc['titre']); ?></h6>
+                                            <p class="small text-muted mb-0"><?php echo htmlspecialchars($doc['description']); ?></p>
+                                        </div>
+                                    </a>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <a href="mes_documents.php" class="btn btn-primary">Accéder</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalRessources" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Aperçu — Ressources pédagogiques</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Consultez les ressources partagées par vos formateurs et téléchargez les supports pédagogiques associés.</p>
+                        <p>Les ressources récentes figurent déjà dans votre tableau de bord.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <a href="upload_ressource.php" class="btn btn-primary">Accéder</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalDistanciel" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Aperçu — Distanciel</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Outils disponibles lorsque la session est en distanciel : émargement, évaluation des acquis, questionnaires et lien Teams.</p>
+                        <p>Si une page dédiée existe, utilisez le bouton Accéder pour y aller.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <a href="#" class="btn btn-primary">Accéder</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalSatisfaction" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Aperçu — Satisfaction & Matériel</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Questionnaires de satisfaction (à chaud et à froid) et liste du matériel mis à disposition pendant la formation.</p>
+                        <ul>
+                                <li>Ordinateur / Tablette</li>
+                                <li>Supports papier</li>
+                                <li>Projecteur</li>
+                                <li>Connexion internet</li>
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <a href="#" class="btn btn-primary">Accéder</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <!-- Modals pour Stagiaire OP -->
+                <div class="modal fade" id="modalOPPresentation" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header" style="background-color:#199ea3;color:#fff;">
+                                <h5 class="modal-title">Présentation du formateur</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Consultez le profil, le parcours et les informations de contact du formateur pour votre session.</p>
+                                <p class="text-muted small">Si une présentation est disponible, elle sera téléchargeable depuis la page dédiée.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                <a href="mes_documents.php?open=presentation-formateur" class="btn btn-primary">Accéder</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="modalOPPlanning" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header" style="background-color:#0d6efd;color:#fff;">
+                                <h5 class="modal-title">Planning de la session</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Le planning indique le jour et l'heure des séances — figurant dans l'intitulé de la session.</p>
+                                <p class="text-muted small">Vous pouvez consulter et télécharger votre planning complet depuis la page dédiée.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                <a href="planning.php" class="btn btn-primary">Accéder</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="modalOPRessources" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header" style="background-color:#17a2b8;color:#fff;">
+                                <h5 class="modal-title">Ressources associées aux séances</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Accédez aux documents du référentiel en lien avec la thématique de chaque séance.</p>
+                                <p class="text-muted small">Les fichiers sont nommés selon le format : <em>Date de la séance.contenu</em>.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                <a href="referentiel.php" class="btn btn-primary">Accéder</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <?php include 'footer.php'; ?>
 
 </body>
 </html>

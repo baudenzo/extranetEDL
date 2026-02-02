@@ -276,6 +276,7 @@ if ($q !== '') {
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdownGestion">
                             <li><a class="dropdown-item" href="gestion_utilisateurs.php">Gestion des utilisateurs</a></li>
                             <li><a class="dropdown-item" href="referentiel.php">Gestion référentiel</a></li>
+                            <li><a class="dropdown-item" href="gestion_liaisons.php">Gestion des liaisons</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -426,7 +427,10 @@ if ($q !== '') {
                                             <input type="password" name="passwords[<?php echo $u['id']; ?>]" class="form-control" placeholder="Optionnel" style="max-width:150px;">
                                         </td>
                                         <td>
-                                            <button type="button" class="btn btn-danger btn-sm delete-user-btn" style="width: 110px;" data-user-id="<?php echo $u['id']; ?>">Supprimer</button>
+                                            <div class="d-flex gap-2">
+                                                <button type="button" class="btn btn-success btn-sm save-user-btn" style="width: 110px;" data-user-id="<?php echo $u['id']; ?>">Sauvegarder</button>
+                                                <button type="button" class="btn btn-danger btn-sm delete-user-btn" style="width: 110px;" data-user-id="<?php echo $u['id']; ?>">Supprimer</button>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -499,19 +503,14 @@ if ($q !== '') {
                                         <input type="password" name="passwords[<?php echo $u['id']; ?>]" class="form-control" placeholder="Laisser vide pour ne pas modifier">
                                     </div>
                                     
-                                    <div class="d-grid">
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-success save-user-btn" data-user-id="<?php echo $u['id']; ?>">Sauvegarder</button>
                                         <button type="button" class="btn btn-danger delete-user-btn" data-user-id="<?php echo $u['id']; ?>">Supprimer cet utilisateur</button>
                                     </div>
                                 </div>
                             </div>
                         <?php endforeach; ?>
                     </div>
-                    
-                    <?php if (!empty($users)): ?>
-                        <div class="text-end mt-3">
-                            <button type="submit" class="btn btn-success" style="min-width: 200px;">Sauvegarder toutes les modifications</button>
-                        </div>
-                    <?php endif; ?>
                 </form>
             </div>
         </div>
@@ -540,6 +539,47 @@ if ($q !== '') {
                     document.body.appendChild(form);
                     form.submit();
                 }
+            });
+        });
+
+        // Gestion des boutons de sauvegarde par utilisateur (création sécurisée du formulaire)
+        document.querySelectorAll('.save-user-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var id = this.getAttribute('data-user-id');
+                if (!id) return;
+
+                function getVal(field) {
+                    var el = document.querySelector('[name="' + field + '[' + id + ']"]');
+                    return el ? el.value : '';
+                }
+
+                var form = document.createElement('form');
+                form.method = 'post';
+                form.style.display = 'none';
+
+                function add(name, value) {
+                    var input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = name;
+                    input.value = value;
+                    form.appendChild(input);
+                }
+
+                add('action', 'update');
+                add('id', id);
+                add('email', getVal('emails'));
+                add('prenom', getVal('prenoms'));
+                add('nom', getVal('noms'));
+                add('numlogin', getVal('numlogins'));
+                var roleEl = document.querySelector('[name="roles[' + id + ']"]');
+                var sexeEl = document.querySelector('[name="sexes[' + id + ']"]');
+                var pwdEl = document.querySelector('[name="passwords[' + id + ']"]');
+                add('role', roleEl ? roleEl.value : '');
+                add('sexe', sexeEl ? sexeEl.value : '');
+                add('password', pwdEl ? pwdEl.value : '');
+
+                document.body.appendChild(form);
+                form.submit();
             });
         });
     </script>

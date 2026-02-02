@@ -30,51 +30,28 @@ function getDefaultPhoto($sexe) {
     return 'pp/default.jpg';
 }
 
-// Liste des documents disponibles
+// Liste des documents disponibles (avec slug pour ouverture ciblée)
 $documents = [
-    [
-        'titre' => 'Convention / Contrat',
-        'description' => 'Votre convention de formation ou contrat',
-        'icone' => 'CC',
-        'couleur' => '#199ea3'
-    ],
-    [
-        'titre' => 'Guide d\'animation',
-        'description' => 'Guide des activités et animations',
-        'icone' => 'GA',
-        'couleur' => '#17a2b8'
-    ],
-    [
-        'titre' => 'Livret d\'accueil',
-        'description' => 'Informations pratiques et règlement',
-        'icone' => 'LA',
-        'couleur' => '#28a745'
-    ],
-    [
-        'titre' => 'Catalogue de formations',
-        'description' => 'Liste complète des formations disponibles',
-        'icone' => 'CF',
-        'couleur' => '#ffc107'
-    ],
-    [
-        'titre' => 'Présentation du formateur',
-        'description' => 'Profil et parcours de votre formateur',
-        'icone' => 'PF',
-        'couleur' => '#6f42c1'
-    ],
-    [
-        'titre' => 'Registre d\'accessibilité',
-        'description' => 'Informations sur l\'accessibilité des locaux',
-        'icone' => 'RA',
-        'couleur' => '#fd7e14'
-    ],
-    [
-        'titre' => 'Présentation des locaux',
-        'description' => 'Plan et présentation des espaces',
-        'icone' => 'PL',
-        'couleur' => '#e83e8c'
-    ]
+    ['slug' => 'convention-contrat', 'titre' => 'Convention / Contrat', 'description' => 'Votre convention de formation ou contrat', 'icone' => 'CC', 'couleur' => '#199ea3'],
+    ['slug' => 'guide-animation', 'titre' => 'Guide d\'animation', 'description' => 'Guide des activités et animations', 'icone' => 'GA', 'couleur' => '#17a2b8'],
+    ['slug' => 'livret-accueil', 'titre' => 'Livret d\'accueil', 'description' => 'Informations pratiques et règlement', 'icone' => 'LA', 'couleur' => '#28a745'],
+    ['slug' => 'catalogue-formations', 'titre' => 'Catalogue de formations', 'description' => 'Liste complète des formations disponibles', 'icone' => 'CF', 'couleur' => '#ffc107'],
+    ['slug' => 'presentation-formateur', 'titre' => 'Présentation du formateur', 'description' => 'Profil et parcours de votre formateur', 'icone' => 'PF', 'couleur' => '#6f42c1'],
+    ['slug' => 'registre-accessibilite', 'titre' => 'Registre d\'accessibilité', 'description' => 'Informations sur l\'accessibilité des locaux', 'icone' => 'RA', 'couleur' => '#fd7e14'],
+    ['slug' => 'presentation-locaux', 'titre' => 'Présentation des locaux', 'description' => 'Plan et présentation des espaces', 'icone' => 'PL', 'couleur' => '#e83e8c']
 ];
+
+// Si un paramètre 'open' est fourni, chercher le document correspondant
+$open_doc = null;
+if (!empty($_GET['open'])) {
+    $open_slug = $_GET['open'];
+    foreach ($documents as $d) {
+        if ($d['slug'] === $open_slug) {
+            $open_doc = $d;
+            break;
+        }
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -140,7 +117,11 @@ $documents = [
         <div class="row g-4 justify-content-center">
             <?php foreach ($documents as $doc): ?>
                 <div class="col-md-6">
-                    <div class="card document-tile h-100 shadow-sm" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" data-bs-toggle="modal" data-bs-target="#modalPlaceholder">
+                    <div class="card document-tile h-100 shadow-sm document-card" role="button" tabindex="0"
+                         data-slug="<?php echo htmlspecialchars($doc['slug']); ?>"
+                         data-title="<?php echo htmlspecialchars($doc['titre']); ?>"
+                         data-desc="<?php echo htmlspecialchars($doc['description']); ?>"
+                         style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
                         <div class="card-body text-center">
                             <h5 class="card-title" style="color: <?php echo $doc['couleur']; ?>;">
                                 <?php echo htmlspecialchars($doc['titre']); ?>
@@ -156,38 +137,76 @@ $documents = [
         </div>
     </div>
 
-    <!-- Modal Placeholder -->
-    <div class="modal fade" id="modalPlaceholder" tabindex="-1" aria-labelledby="modalPlaceholderLabel" aria-hidden="true">
+    <!-- Modal Document Detail (s'utilise aussi pour ouverture ciblée via ?open=slug) -->
+    <div class="modal fade" id="modalDocumentDetail" tabindex="-1" aria-labelledby="modalDocumentDetailLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header" style="background-color: #199ea3; color: white;">
-                    <h5 class="modal-title" id="modalPlaceholderLabel">Document en préparation</h5>
+                    <h5 class="modal-title" id="modalDocumentDetailLabel"><?php echo $open_doc ? htmlspecialchars($open_doc['titre']) : 'Document en préparation'; ?></h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body text-center py-5">
-                    <h4 class="mb-3">Document bientôt disponible</h4>
-                    <p class="text-muted">Ce document sera mis en ligne prochainement par l'administration.</p>
-                    <p class="text-muted small mb-0">Vous serez notifié dès sa mise à disposition.</p>
+                <div class="modal-body text-center py-4">
+                    <?php if ($open_doc): ?>
+                        <p class="mb-2 fw-semibold"><?php echo htmlspecialchars($open_doc['description']); ?></p>
+                        <p class="text-muted small">Ce document est affiché en aperçu. Si un fichier est disponible, il sera téléchargeable depuis cette page.</p>
+                        <div class="mt-3">
+                            <a href="#" class="btn btn-outline-primary">Télécharger</a>
+                        </div>
+                    <?php else: ?>
+                        <h4 class="mb-3">Document bientôt disponible</h4>
+                        <p class="text-muted">Ce document sera mis en ligne prochainement par l'administration.</p>
+                        <p class="text-muted small mb-0">Vous serez notifié dès sa mise à disposition.</p>
+                    <?php endif; ?>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <?php if ($open_doc): ?>
+                        <a href="mes_documents.php" class="btn btn-primary">Voir la liste</a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
 
     <style>
-        .document-tile:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
-        }
-        
-        .document-tile {
-            border-left: 4px solid #199ea3;
-        }
+        .document-tile:hover { transform: translateY(-10px); box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important; }
+        .document-tile { border-left: 4px solid #199ea3; }
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var cards = document.querySelectorAll('.document-card');
+        var modalEl = document.getElementById('modalDocumentDetail');
+        if (!modalEl) return;
+        var bsModal = new bootstrap.Modal(modalEl);
+        var modalTitle = modalEl.querySelector('.modal-title');
+        var modalBody = modalEl.querySelector('.modal-body');
+
+        cards.forEach(function(card) {
+            function openFromCard() {
+                var title = card.dataset.title || 'Document';
+                var desc = card.dataset.desc || '';
+                modalTitle.textContent = title;
+                modalBody.innerHTML = '<p class="mb-2 fw-semibold">' + desc + '</p>' +
+                    '<p class="text-muted small">Ce document est affiché en aperçu. Si un fichier est disponible, il sera téléchargeable depuis cette page.</p>' +
+                    '<div class="mt-3"><a href="#" class="btn btn-outline-primary">Télécharger</a></div>';
+                bsModal.show();
+            }
+            card.addEventListener('click', openFromCard);
+            card.addEventListener('keypress', function(e){ if (e.key === 'Enter' || e.keyCode === 13) openFromCard(); });
+        });
+    });
+    </script>
+    <?php if ($open_doc): ?>
+    <script>
+        // Ouvrir automatiquement le modal si un document ciblé est demandé
+        document.addEventListener('DOMContentLoaded', function () {
+            var modal = new bootstrap.Modal(document.getElementById('modalDocumentDetail'));
+            modal.show();
+        });
+    </script>
+    <?php endif; ?>
     <?php include 'footer.php'; ?>
 
 </body>
