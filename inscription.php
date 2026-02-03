@@ -65,7 +65,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $numlogin = genererLoginUnique($pdo);
         
-        $stmt = $pdo->prepare('INSERT INTO utilisateurs (email, prenom, nom, numlogin, password, role, sexe, photo) VALUES (:email, :prenom, :nom, :numlogin, SHA2(:password, 256), :role, :sexe, :photo)');
+        $distanciel = isset($_POST['distanciel']) && $_POST['distanciel'] === '1' ? 1 : 0;
+        $stmt = $pdo->prepare('INSERT INTO utilisateurs (email, prenom, nom, numlogin, password, role, sexe, photo, distanciel) VALUES (:email, :prenom, :nom, :numlogin, SHA2(:password, 256), :role, :sexe, :photo, :distanciel)');
         $stmt->execute([
             'email' => $email,
             'prenom' => $prenom,
@@ -74,7 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'password' => $password,
             'role' => $role,
             'sexe' => $sexe,
-            'photo' => getDefaultPhoto($sexe)
+            'photo' => getDefaultPhoto($sexe),
+            'distanciel' => $distanciel
         ]);
         
         $resultEmail = envoyerEmailNouveauCompte($email, $prenom . ' ' . $nom, $numlogin);
@@ -166,6 +168,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     </select>
                                 </div>
                             </div>
+                            <div class="row mb-3" id="distancielRow" style="display:none;">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="distanciel" value="1" id="distancielCheck" <?php echo (!empty($_POST['distanciel']) && $_POST['distanciel']==='1') ? 'checked' : ''; ?>>
+                                        <label class="form-check-label" for="distancielCheck">Session en distanciel</label>
+                                    </div>
+                                </div>
+                            </div>
                             
                             <div class="mb-3">
                                 <label for="password" class="form-label">Mot de passe *</label>
@@ -204,3 +214,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 </body>
 </html>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    var role = document.getElementById('role');
+    var distRow = document.getElementById('distancielRow');
+    function updateDistRow(){
+        if(!role) return;
+        distRow.style.display = (role.value === 'stagiaire FPC') ? '' : 'none';
+    }
+    if(role){ role.addEventListener('change', updateDistRow); updateDistRow(); }
+});
+</script>

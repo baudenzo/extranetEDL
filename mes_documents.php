@@ -67,6 +67,9 @@ if (!empty($_GET['open'])) {
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container-fluid">
+            <a class="navbar-brand site-logo me-3 d-flex align-items-center" href="dashboard.php">
+                <img src="img/logo.png" alt="EDL+ logo" style="height:40px; object-fit:contain;" />
+            </a>
             <a class="navbar-brand d-flex align-items-center" href="profil.php">
                 <?php if ($user['photo']): ?>
                     <img src="<?php echo htmlspecialchars($user['photo']); ?>?v=<?php echo time(); ?>" alt="Photo de profil" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
@@ -89,6 +92,7 @@ if (!empty($_GET['open'])) {
                     <li class="nav-item">
                         <a class="nav-link" href="#">Mes Ressources</a>
                     </li>
+                    <?php if ((int)($user['distanciel'] ?? 0) === 1): ?>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownDistanciel" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Distanciel
@@ -100,6 +104,7 @@ if (!empty($_GET['open'])) {
                             <li><a class="dropdown-item" href="#">Teams</a></li>
                         </ul>
                     </li>
+                    <?php endif; ?>
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item">

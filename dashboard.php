@@ -38,6 +38,30 @@ function getDefaultPhoto($sexe) {
     if ($sexe === 'masculin') return 'pp/defaulth.jpg';
     return 'pp/default.jpg';
 }
+
+// Si l'utilisateur est formateur, préparer les données pour afficher l'espace formateur sur la page d'accueil
+if ($user['role'] === 'formateur') {
+    // récupérer les stagiaires liés à ce formateur
+    $st = $pdo->prepare('SELECT u.id, u.prenom, u.nom, u.role, u.photo FROM utilisateurs u JOIN stagiaire_formateur sf ON u.id = sf.stagiaire_id WHERE sf.formateur_id = :fid ORDER BY u.prenom, u.nom');
+    $st->execute(['fid' => $user_id]);
+    $stagiaires = $st->fetchAll(PDO::FETCH_ASSOC);
+    $hasFPC = false;
+    $hasOP = false;
+    foreach ($stagiaires as $r) {
+        if (isset($r['role'])) {
+            if ($r['role'] === 'stagiaire FPC') $hasFPC = true;
+            if ($r['role'] === 'stagiaire OP') $hasOP = true;
+        }
+    }
+}
+
+// Si l'utilisateur est stagiaire, récupérer son formateur lié (si présent)
+$formateur = null;
+if (strpos($user['role'], 'stagiaire') === 0) {
+    $fstmt = $pdo->prepare('SELECT f.id, f.prenom, f.nom, f.email, f.photo FROM utilisateurs f JOIN stagiaire_formateur sf ON f.id = sf.formateur_id WHERE sf.stagiaire_id = :sid LIMIT 1');
+    $fstmt->execute(['sid' => $user_id]);
+    $formateur = $fstmt->fetch(PDO::FETCH_ASSOC);
+}
 ?>
 
 <!DOCTYPE html>
@@ -61,6 +85,9 @@ function getDefaultPhoto($sexe) {
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container-fluid">
+            <a class="navbar-brand site-logo me-3 d-flex align-items-center" href="dashboard.php">
+                <img src="img/logo.png" alt="EDL+ logo" style="height:40px; object-fit:contain;" />
+            </a>
             <a class="navbar-brand d-flex align-items-center" href="profil.php">
                 <?php if ($user['photo']): ?>
                     <img src="<?php echo htmlspecialchars($user['photo']); ?>?v=<?php echo time(); ?>" alt="Photo de profil" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
@@ -104,11 +131,13 @@ function getDefaultPhoto($sexe) {
                         </li>
                     <?php elseif ($user['role'] == 'stagiaire FPC'): ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="mes_documents.php">Mes Documents</a>
+                            <a class="nav-link" href="mes_d
+                            ocuments.php">Mes Documents</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#">Mes Ressources</a>
                         </li>
+                        <?php if ((int)($user['distanciel'] ?? 0) === 1): ?>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownDistanciel" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Distanciel
@@ -120,6 +149,7 @@ function getDefaultPhoto($sexe) {
                                 <li><a class="dropdown-item" href="#">Lien Teams</a></li>
                             </ul>
                         </li>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </ul>
                 <ul class="navbar-nav">
@@ -136,6 +166,106 @@ function getDefaultPhoto($sexe) {
             <h1>Bienvenue sur votre espace <?php echo getRoleLabel('admin', $user['sexe']); ?>, <?php echo $_SESSION['prenom']; ?> !</h1>
         <?php elseif ($_SESSION['role'] == 'formateur'): ?>
             <h1>Bienvenue sur votre espace <?php echo getRoleLabel('formateur', $user['sexe']); ?>, <?php echo $_SESSION['prenom']; ?> !</h1>
+
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header card-clickable" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#modal_stagiaires">Stagiaires liés</div>
+                        <div class="card-body">
+                            <?php if (empty($stagiaires)): ?>
+                                <p>Aucun stagiaire lié pour le moment.</p>
+                            <?php else: ?>
+                                <ul class="list-group">
+                                    <?php foreach ($stagiaires as $s): ?>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <?php echo htmlspecialchars($s['prenom'] . ' ' . $s['nom']); ?>
+                                            <span class="badge bg-secondary"><?php echo htmlspecialchars($s['role']); ?></span>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <?php if ($hasFPC): ?>
+                        <div class="card mb-3">
+                            <div class="card-header bg-success text-white card-clickable" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#modal_fpc_overview">Formateur FPC — Tableaux et outils</div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-sm-6 col-lg-3">
+                                        <div class="card card-clickable h-100" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#modal_checklist">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Checklist formateurs</h6>
+                                                <p class="card-text small text-muted">Outils et vérifications rapides</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6 col-lg-3">
+                                        <div class="card card-clickable h-100" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#modal_satisfaction">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Questionnaire de satisfaction</h6>
+                                                <p class="card-text small text-muted">Remplissable en ligne</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6 col-lg-3">
+                                        <div class="card card-clickable h-100" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#modal_evaluation">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Évaluation des acquis</h6>
+                                                <p class="card-text small text-muted">Remplissable en ligne</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6 col-lg-3">
+                                        <div class="card card-clickable h-100" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#modal_emargement">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Feuille d'émargement</h6>
+                                                <p class="card-text small text-muted">Émargement / signature</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ($hasOP): ?>
+                        <div class="card mb-3">
+                            <div class="card-header bg-primary text-white card-clickable" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#modal_op_overview">Formateur OP — Sessions</div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="card card-clickable" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#modal_sessions">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Liste des sessions</h6>
+                                                <p class="card-text small text-muted">Sessions OP cliquables</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card card-clickable" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#modal_dossier">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Dossier de séance</h6>
+                                                <p class="card-text small text-muted">Boîtes thématiques et documents</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!$hasFPC && !$hasOP): ?>
+                        <div class="card placeholder-card">
+                            <div class="card-body">
+                                <p>Aucune activité détectée pour ce formateur. Lorsque des stagiaires seront liés, les outils apparaîtront ici.</p>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
         <?php elseif ($_SESSION['role'] == 'stagiaire OP'): ?>
             <h1>Bienvenue sur votre espace Stagiaire OP, <?php echo $_SESSION['prenom']; ?> !</h1>
 
@@ -155,6 +285,21 @@ function getDefaultPhoto($sexe) {
                             <div class="card-header"><strong>Planning</strong></div>
                             <div class="card-body">
                                 <p>Accédez au planning de vos séances (le jour indiqué dans l'intitulé de la session).</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-4 mt-3">
+                        <div class="col-md-4">
+                            <div class="card shadow-sm card-clickable" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#modalMonFormateur">
+                                <div class="card-header"><strong>Mon formateur</strong></div>
+                                <div class="card-body">
+                                    <?php if ($formateur): ?>
+                                        <p class="mb-1"><?php echo htmlspecialchars($formateur['prenom'] . ' ' . $formateur['nom']); ?></p>
+                                        <p class="small text-muted mb-0"><?php echo htmlspecialchars($formateur['email'] ?? ''); ?></p>
+                                    <?php else: ?>
+                                        <p class="text-muted">Aucun formateur lié.</p>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -262,6 +407,23 @@ function getDefaultPhoto($sexe) {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div class="row g-4 mt-3">
+                    <div class="col-md-4">
+                        <div class="card shadow-sm card-clickable" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#modalMonFormateur">
+                            <div class="card-header"><strong>Mon formateur</strong></div>
+                            <div class="card-body">
+                                <?php if ($formateur): ?>
+                                    <p class="mb-1"><?php echo htmlspecialchars($formateur['prenom'] . ' ' . $formateur['nom']); ?></p>
+                                    <p class="small text-muted mb-0"><?php echo htmlspecialchars($formateur['email'] ?? ''); ?></p>
+                                <?php else: ?>
+                                    <p class="text-muted">Aucun formateur lié.</p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                     <div class="col-md-6">
                         <div class="card shadow-sm card-clickable" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#modalSatisfaction">
@@ -436,6 +598,210 @@ function getDefaultPhoto($sexe) {
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                                 <a href="referentiel.php" class="btn btn-primary">Accéder</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modals pour espace formateur (FPC / OP) -->
+                <div class="modal fade" id="modal_stagiaires" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Stagiaires liés</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                            </div>
+                            <div class="modal-body">
+                                <?php if (empty($stagiaires)): ?>
+                                    <p>Aucun stagiaire lié.</p>
+                                <?php else: ?>
+                                    <ul class="list-group">
+                                        <?php foreach ($stagiaires as $s): ?>
+                                            <li class="list-group-item d-flex align-items-center">
+                                                <div class="flex-grow-1"><?php echo htmlspecialchars($s['prenom'] . ' ' . $s['nom']); ?></div>
+                                                <span class="badge bg-secondary ms-2"><?php echo htmlspecialchars($s['role']); ?></span>
+                                            </li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                <?php endif; ?>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="modal_fpc_overview" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Formateur FPC — Outils</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Accès rapide aux outils FPC :</p>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-outline-primary" data-bs-target="#modal_checklist" data-bs-toggle="modal" data-bs-dismiss="modal">Checklist formateurs</button>
+                                    <button class="btn btn-outline-primary" data-bs-target="#modal_satisfaction" data-bs-toggle="modal" data-bs-dismiss="modal">Questionnaire de satisfaction</button>
+                                    <button class="btn btn-outline-primary" data-bs-target="#modal_evaluation" data-bs-toggle="modal" data-bs-dismiss="modal">Évaluation des acquis</button>
+                                    <button class="btn btn-outline-primary" data-bs-target="#modal_emargement" data-bs-toggle="modal" data-bs-dismiss="modal">Feuille d'émargement</button>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="modal_op_overview" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Formateur OP — Outils</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Accès rapide aux outils OP :</p>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-outline-primary" data-bs-target="#modal_sessions" data-bs-toggle="modal" data-bs-dismiss="modal">Liste des sessions</button>
+                                    <button class="btn btn-outline-primary" data-bs-target="#modal_dossier" data-bs-toggle="modal" data-bs-dismiss="modal">Dossier de séance</button>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modals placeholders FPC/OP -->
+                <div class="modal fade" id="modal_checklist" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Checklist formateurs</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Placeholder : checklist et actions rapides pour le formateur FPC.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="modal_satisfaction" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Questionnaire de satisfaction</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Placeholder : formulaire de satisfaction (intégration future de Google Forms ou formulaire interne).</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="modal_evaluation" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Évaluation des acquis</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Placeholder : évaluation des acquis (à implémenter).</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="modal_emargement" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Feuille d'émargement</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Placeholder : feuille d'émargement et options de génération (PDF / émargement en distanciel).</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="modal_sessions" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Liste des sessions</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Placeholder : liste des sessions OP (clickable). Ici on affichera le planning et liens vers dossiers de séance.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="modal_dossier" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Dossier de séance</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Placeholder : dossier de séance avec boîtes thématiques et ressources.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Modal: Mon formateur (pour stagiaires) -->
+                <div class="modal fade" id="modalMonFormateur" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-md modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Mon formateur</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                            </div>
+                            <div class="modal-body">
+                                <?php if ($formateur): ?>
+                                    <div class="d-flex align-items-center">
+                                        <img src="<?php echo htmlspecialchars($formateur['photo'] ?? 'pp/default.jpg'); ?>" alt="Photo" class="rounded-circle me-3" style="width:64px; height:64px; object-fit:cover;">
+                                        <div>
+                                            <h6 class="mb-0"><?php echo htmlspecialchars($formateur['prenom'] . ' ' . $formateur['nom']); ?></h6>
+                                            <p class="small text-muted mb-0"><?php echo htmlspecialchars($formateur['email'] ?? ''); ?></p>
+                                        </div>
+                                    </div>
+                                <?php else: ?>
+                                    <p>Aucun formateur n'est lié à votre compte pour le moment.</p>
+                                <?php endif; ?>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                             </div>
                         </div>
                     </div>

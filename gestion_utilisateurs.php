@@ -51,12 +51,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $role = sanitize_role($_POST['role'] ?? '');
             $sexe = sanitize_sexe($_POST['sexe'] ?? '');
             $password = trim($_POST['password'] ?? '');
+            $distanciel = isset($_POST['distanciel']) && $_POST['distanciel'] === '1' ? 1 : 0;
 
             if (!$email || !$prenom || !$nom || !$numlogin || !$role || !$sexe || !$password) {
                 throw new Exception('Tous les champs sont requis pour la création.');
             }
 
-            $stmt = $pdo->prepare('INSERT INTO utilisateurs (email, prenom, nom, numlogin, password, role, sexe) VALUES (:email, :prenom, :nom, :numlogin, SHA2(:password, 256), :role, :sexe)');
+            $stmt = $pdo->prepare('INSERT INTO utilisateurs (email, prenom, nom, numlogin, password, role, sexe, distanciel) VALUES (:email, :prenom, :nom, :numlogin, SHA2(:password, 256), :role, :sexe, :distanciel)');
             $stmt->execute([
                 'email' => $email,
                 'prenom' => $prenom,
@@ -65,6 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'password' => $password,
                 'role' => $role,
                 'sexe' => $sexe,
+                'distanciel' => $distanciel,
             ]);
             // dernier id inséré
             $newId = (int)$pdo->lastInsertId();
@@ -121,6 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $passwords = $_POST['passwords'] ?? [];
             
             $updateCount = 0;
+            $distanciels = $_POST['distanciels'] ?? [];
             foreach ($ids as $id) {
                 $id = intval($id);
                 $email = trim($emails[$id] ?? '');
@@ -130,6 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $role = sanitize_role($roles[$id] ?? '');
                 $sexe = sanitize_sexe($sexes[$id] ?? '');
                 $password = trim($passwords[$id] ?? '');
+                $dist = isset($distanciels[$id]) && $distanciels[$id] == '1' ? 1 : 0;
                 
                 if ($id > 0 && $email && $prenom && $nom && $numlogin && $role && $sexe) {
                     // Récupérer les valeurs actuelles
@@ -149,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         
                         if ($hasChanged) {
                             if ($password !== '') {
-                                $stmt = $pdo->prepare('UPDATE utilisateurs SET email = :email, prenom = :prenom, nom = :nom, numlogin = :numlogin, role = :role, sexe = :sexe, password = SHA2(:password, 256) WHERE id = :id');
+                                $stmt = $pdo->prepare('UPDATE utilisateurs SET email = :email, prenom = :prenom, nom = :nom, numlogin = :numlogin, role = :role, sexe = :sexe, distanciel = :distanciel, password = SHA2(:password, 256) WHERE id = :id');
                                 $stmt->execute([
                                     'email' => $email,
                                     'prenom' => $prenom,
@@ -157,11 +161,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     'numlogin' => $numlogin,
                                     'role' => $role,
                                     'sexe' => $sexe,
+                                    'distanciel' => $dist,
                                     'password' => $password,
                                     'id' => $id,
                                 ]);
                             } else {
-                                $stmt = $pdo->prepare('UPDATE utilisateurs SET email = :email, prenom = :prenom, nom = :nom, numlogin = :numlogin, role = :role, sexe = :sexe WHERE id = :id');
+                                $stmt = $pdo->prepare('UPDATE utilisateurs SET email = :email, prenom = :prenom, nom = :nom, numlogin = :numlogin, role = :role, sexe = :sexe, distanciel = :distanciel WHERE id = :id');
                                 $stmt->execute([
                                     'email' => $email,
                                     'prenom' => $prenom,
@@ -169,6 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     'numlogin' => $numlogin,
                                     'role' => $role,
                                     'sexe' => $sexe,
+                                    'distanciel' => $dist,
                                     'id' => $id,
                                 ]);
                             }
@@ -186,6 +192,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $numlogin = trim($_POST['numlogin'] ?? '');
             $role = sanitize_role($_POST['role'] ?? '');
             $sexe = sanitize_sexe($_POST['sexe'] ?? '');
+            $distanciel = isset($_POST['distanciel']) && $_POST['distanciel'] === '1' ? 1 : 0;
             $password = trim($_POST['password'] ?? '');
 
             if ($id <= 0 || !$email || !$prenom || !$nom || !$numlogin || !$role || !$sexe) {
@@ -193,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if ($password !== '') {
-                $stmt = $pdo->prepare('UPDATE utilisateurs SET email = :email, prenom = :prenom, nom = :nom, numlogin = :numlogin, role = :role, sexe = :sexe, password = SHA2(:password, 256) WHERE id = :id');
+                $stmt = $pdo->prepare('UPDATE utilisateurs SET email = :email, prenom = :prenom, nom = :nom, numlogin = :numlogin, role = :role, sexe = :sexe, distanciel = :distanciel, password = SHA2(:password, 256) WHERE id = :id');
                 $stmt->execute([
                     'email' => $email,
                     'prenom' => $prenom,
@@ -201,11 +208,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'numlogin' => $numlogin,
                     'role' => $role,
                     'sexe' => $sexe,
+                    'distanciel' => $distanciel,
                     'password' => $password,
                     'id' => $id,
                 ]);
             } else {
-                $stmt = $pdo->prepare('UPDATE utilisateurs SET email = :email, prenom = :prenom, nom = :nom, numlogin = :numlogin, role = :role, sexe = :sexe WHERE id = :id');
+                $stmt = $pdo->prepare('UPDATE utilisateurs SET email = :email, prenom = :prenom, nom = :nom, numlogin = :numlogin, role = :role, sexe = :sexe, distanciel = :distanciel WHERE id = :id');
                 $stmt->execute([
                     'email' => $email,
                     'prenom' => $prenom,
@@ -213,6 +221,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'numlogin' => $numlogin,
                     'role' => $role,
                     'sexe' => $sexe,
+                    'distanciel' => $distanciel,
                     'id' => $id,
                 ]);
             }
@@ -233,7 +242,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // recherche des utilisateurs en fonction du nom ou prénom
 if ($q !== '') {
-    $stmt = $pdo->prepare('SELECT id, email, prenom, nom, numlogin, role, sexe, photo, created_at
+    $stmt = $pdo->prepare('SELECT id, email, prenom, nom, numlogin, role, sexe, photo, created_at, distanciel
                             FROM utilisateurs
                             WHERE email LIKE :q OR prenom LIKE :q OR nom LIKE :q OR numlogin LIKE :q
                             ORDER BY id ASC');
@@ -241,7 +250,7 @@ if ($q !== '') {
     $stmt->execute(['q' => $like]);
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
-    $stmt = $pdo->query('SELECT id, email, prenom, nom, numlogin, role, sexe, photo, created_at FROM utilisateurs ORDER BY id ASC');
+    $stmt = $pdo->query('SELECT id, email, prenom, nom, numlogin, role, sexe, photo, created_at, distanciel FROM utilisateurs ORDER BY id ASC');
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 ?>
@@ -259,6 +268,9 @@ if ($q !== '') {
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container-fluid">
+            <a class="navbar-brand site-logo me-3 d-flex align-items-center" href="dashboard.php">
+                <img src="img/logo.png" alt="EDL+ logo" style="height:40px; object-fit:contain;" />
+            </a>
             <a class="navbar-brand d-flex align-items-center" href="profil.php">
                 <img src="<?php echo !empty($current['photo']) ? htmlspecialchars($current['photo']) : 'pp/default.jpg'; ?>" alt="Photo" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
                 <span><?php echo htmlspecialchars(($current['prenom'] ?? $_SESSION['prenom']) . ' ' . ($current['nom'] ?? $_SESSION['nom'])); ?></span>
@@ -322,7 +334,7 @@ if ($q !== '') {
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Rôle</label>
-                        <select name="role" class="form-select" required>
+                            <select name="role" id="create_role" class="form-select" required>
                             <option value="admin">Admin</option>
                             <option value="formateur">Formateur</option>
                             <option value="stagiaire OP">Stagiaire OP</option>
@@ -352,6 +364,12 @@ if ($q !== '') {
                             <label class="form-check-label" for="envoyerEmail">
                                 Envoyer les identifiants par email à l'utilisateur
                             </label>
+                        </div>
+                    </div>
+                    <div class="col-12" id="createDistRow" style="display:none; margin-top:8px;">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="distanciel" value="1" id="createDistCheck">
+                            <label class="form-check-label" for="createDistCheck">Session en distanciel (stagiaire FPC)</label>
                         </div>
                     </div>
                     <div class="col-12">
@@ -389,6 +407,7 @@ if ($q !== '') {
                                         <th>Nom</th>
                                         <th>Login</th>
                                         <th>Rôle</th>
+                                        <th>Distanciel</th>
                                         <th>Sexe</th>
                                         <th>Mot de passe</th>
                                         <th>Actions</th>
@@ -415,6 +434,9 @@ if ($q !== '') {
                                                 <option value="stagiaire OP" <?php echo $u['role']==='stagiaire OP'?'selected':''; ?>>Stagiaire OP</option>
                                                 <option value="stagiaire FPC" <?php echo $u['role']==='stagiaire FPC'?'selected':''; ?>>Stagiaire FPC</option>
                                             </select>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="checkbox" name="distanciels[<?php echo $u['id']; ?>]" value="1" <?php echo !empty($u['distanciel']) ? 'checked' : ''; ?> >
                                         </td>
                                         <td>
                                             <select name="sexes[<?php echo $u['id']; ?>]" class="form-select" style="min-width: 110px;" required>
@@ -496,6 +518,12 @@ if ($q !== '') {
                                                 <option value="autre" <?php echo $u['sexe']==='autre'?'selected':''; ?>>Autre</option>
                                             </select>
                                         </div>
+                                        <div class="col-12 mt-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="distanciels[<?php echo $u['id']; ?>]" value="1" id="dist_<?php echo $u['id']; ?>" <?php echo !empty($u['distanciel']) ? 'checked' : ''; ?>>
+                                                <label class="form-check-label" for="dist_<?php echo $u['id']; ?>">Session en distanciel (stagiaire FPC)</label>
+                                            </div>
+                                        </div>
                                     </div>
                                     
                                     <div class="mb-3">
@@ -527,6 +555,15 @@ if ($q !== '') {
             }
             document.getElementById('numlogin').value = login;
         });
+        
+        // Toggle distanciel checkbox for create form
+        var createRole = document.getElementById('create_role');
+        var createDistRow = document.getElementById('createDistRow');
+        if(createRole && createDistRow){
+            function updateCreateDist(){ createDistRow.style.display = (createRole.value === 'stagiaire FPC') ? '' : 'none'; }
+            createRole.addEventListener('change', updateCreateDist);
+            updateCreateDist();
+        }
         
         // Gestion des boutons de suppression
         document.querySelectorAll('.delete-user-btn').forEach(function(btn) {
@@ -577,6 +614,8 @@ if ($q !== '') {
                 add('role', roleEl ? roleEl.value : '');
                 add('sexe', sexeEl ? sexeEl.value : '');
                 add('password', pwdEl ? pwdEl.value : '');
+                var distEl = document.querySelector('[name="distanciels[' + id + ']"]');
+                add('distanciel', distEl && distEl.checked ? '1' : '0');
 
                 document.body.appendChild(form);
                 form.submit();

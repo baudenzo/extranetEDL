@@ -54,6 +54,9 @@ function getDefaultPhoto($sexe) {
 
 <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container-fluid">
+            <a class="navbar-brand site-logo me-3 d-flex align-items-center" href="dashboard.php">
+                <img src="img/logo.png" alt="EDL+ logo" style="height:40px; object-fit:contain;" />
+            </a>
             <a class="navbar-brand d-flex align-items-center" href="profil.php">
                 <?php if ($user['photo']): ?>
                     <img src="<?php echo htmlspecialchars($user['photo']); ?>?v=<?php echo time(); ?>" alt="Photo de profil" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">

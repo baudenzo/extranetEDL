@@ -11,6 +11,14 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true || $_SESSI
 $pdo = ConnexionBDD();
 $feedback = '';
 
+// informations de l'utilisateur utilisant la session (pour navbar)
+$current = null;
+if (isset($_SESSION['user_id'])) {
+    $st = $pdo->prepare('SELECT prenom, nom, photo FROM utilisateurs WHERE id = :id');
+    $st->execute(['id' => $_SESSION['user_id']]);
+    $current = $st->fetch(PDO::FETCH_ASSOC);
+}
+
 // Actions: create, update (change formateur), delete
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -78,7 +86,13 @@ $stagiaires = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container-fluid">
-            <a class="navbar-brand" href="dashboard.php">EDL+</a>
+            <a class="navbar-brand site-logo me-3 d-flex align-items-center" href="dashboard.php">
+                <img src="img/logo.png" alt="EDL+ logo" style="height:40px; object-fit:contain;" />
+            </a>
+            <a class="navbar-brand d-flex align-items-center" href="profil.php">
+                <img src="<?php echo !empty($current['photo']) ? htmlspecialchars($current['photo']) : 'pp/default.jpg'; ?>" alt="Photo" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                <span><?php echo htmlspecialchars(($current['prenom'] ?? $_SESSION['prenom']) . ' ' . ($current['nom'] ?? $_SESSION['nom'])); ?></span>
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="#navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>

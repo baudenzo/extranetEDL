@@ -6,6 +6,7 @@ body {
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 html {
@@ -14,6 +15,8 @@ html {
 
 .container {
     flex: 1;
+    position: relative;
+    z-index: 1; /* s'assurer que le contenu soit au-dessus du background logo */
 }
 
 .waves{
@@ -39,6 +42,10 @@ html {
     border-radius: 8px;
     margin: 0 8px;
 }
+
+/* Logo in navbar (site brand) */
+.navbar-brand.site-logo img { height: 40px; object-fit: contain; }
+@media (max-width: 575px) { .navbar-brand.site-logo img { height: 32px; } }
 
 .navbar-custom .navbar-brand:hover {
     background-color: rgba(255, 255, 255, 0.15);
