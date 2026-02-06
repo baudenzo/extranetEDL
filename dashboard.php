@@ -122,6 +122,11 @@ if (strpos($user['role'], 'stagiaire') === 0) {
                         <li class="nav-item">
                             <a class="nav-link" href="#">Stagiaires</a>
                         </li>
+                        <?php if ($hasFPC): ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="deposer_ressource.php">Déposer une ressource</a>
+                            </li>
+                        <?php endif; ?>
                     <?php elseif ($user['role'] == 'stagiaire OP'): ?>
                         <li class="nav-item">
                             <a class="nav-link" href="#">Calendrier des séances</a>
@@ -131,11 +136,10 @@ if (strpos($user['role'], 'stagiaire') === 0) {
                         </li>
                     <?php elseif ($user['role'] == 'stagiaire FPC'): ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="mes_d
-                            ocuments.php">Mes Documents</a>
+                            <a class="nav-link" href="mes_documents.php">Mes Documents</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Mes Ressources</a>
+                            <a class="nav-link" href="mes_ressources.php">Ressources du formateur</a>
                         </li>
                         <?php if ((int)($user['distanciel'] ?? 0) === 1): ?>
                         <li class="nav-item dropdown">

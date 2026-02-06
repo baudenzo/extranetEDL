@@ -90,7 +90,7 @@ if (!empty($_GET['open'])) {
                         <a class="nav-link active" href="mes_documents.php">Mes Documents</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Mes Ressources</a>
+                        <a class="nav-link" href="mes_ressources.php">Ressources du formateur</a>
                     </li>
                     <?php if ((int)($user['distanciel'] ?? 0) === 1): ?>
                     <li class="nav-item dropdown">

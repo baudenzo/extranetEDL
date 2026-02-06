@@ -103,7 +103,7 @@ function getDefaultPhoto($sexe) {
                             <a class="nav-link" href="#">Mes Documents</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Mes Ressources</a>
+                            <a class="nav-link" href="mes_ressources.php">Ressources du formateur</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#">Émargement</a>

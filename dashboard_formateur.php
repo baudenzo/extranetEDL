@@ -61,6 +61,9 @@ foreach ($stagiaires as $s) {
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link" href="dashboard.php">Accueil</a></li>
                     <li class="nav-item"><a class="nav-link active" href="dashboard_formateur.php">Espace formateur</a></li>
+                    <?php if ($hasFPC): ?>
+                        <li class="nav-item"><a class="nav-link" href="deposer_ressource.php">Déposer une ressource</a></li>
+                    <?php endif; ?>
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item"><a class="nav-link" href="index.php">Déconnexion</a></li>
@@ -136,6 +139,7 @@ foreach ($stagiaires as $s) {
                                             <button class="btn btn-outline-primary" data-bs-target="#modal_satisfaction" data-bs-toggle="modal" data-bs-dismiss="modal">Questionnaire de satisfaction</button>
                                             <button class="btn btn-outline-primary" data-bs-target="#modal_evaluation" data-bs-toggle="modal" data-bs-dismiss="modal">Évaluation des acquis</button>
                                             <button class="btn btn-outline-primary" data-bs-target="#modal_emargement" data-bs-toggle="modal" data-bs-dismiss="modal">Feuille d'émargement</button>
+                                            <a class="btn btn-outline-success" href="deposer_ressource.php">Déposer une ressource</a>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
