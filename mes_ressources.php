@@ -140,10 +140,7 @@ function getFileIcon($type) {
                 Aucune ressource disponible pour le moment.
             </div>
         <?php else: ?>
-            <!-- Titre -->
-            <div class="mb-3">
-                <h5>📚 <?php echo count($ressources); ?> ressource(s) disponible(s)</h5>
-            </div>
+
             
             <!-- Accordéons par module -->
             <div class="accordion" id="accordeonRessources">
@@ -159,7 +156,7 @@ function getFileIcon($type) {
                                 <span class="badge bg-secondary ms-2"><?php echo count($ressourcesModule); ?></span>
                             </button>
                         </h2>
-                        <div id="<?php echo $accordionId; ?>" class="accordion-collapse collapse show" aria-labelledby="heading<?php echo $accordionIndex; ?>" data-bs-parent="#accordeonRessources">
+                        <div id="<?php echo $accordionId; ?>" class="accordion-collapse collapse show" aria-labelledby="heading<?php echo $accordionIndex; ?>">
                             <div class="accordion-body">
                                 <div class="row">
                                     <?php foreach ($ressourcesModule as $ressource): ?>
@@ -185,10 +182,10 @@ function getFileIcon($type) {
                                                         <strong>Déposé le :</strong> <?php echo date('d/m/Y à H:i', strtotime($ressource['date_upload'])); ?>
                                                     </p>
                                                     <button class="btn btn-primary btn-sm" onclick="ouvrirVisionneuse(<?php echo $ressource['id']; ?>, '<?php echo htmlspecialchars($ressource['titre'] ?? $ressource['nom_fichier_original'], ENT_QUOTES); ?>')">
-                                                        👁️ Voir
+                                                        Voir
                                                     </button>
                                                     <a href="<?php echo htmlspecialchars($ressource['chemin_fichier']); ?>" class="btn btn-outline-secondary btn-sm" download>
-                                                        📥 Télécharger
+                                                        Télécharger
                                                     </a>
                                                 </div>
                                             </div>

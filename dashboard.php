@@ -113,6 +113,7 @@ if (strpos($user['role'], 'stagiaire') === 0) {
                                 <li><a class="dropdown-item" href="gestion_utilisateurs.php">Gestion des utilisateurs</a></li>
                                 <li><a class="dropdown-item" href="referentiel.php">Gestion référentiel</a></li>
                                 <li><a class="dropdown-item" href="gestion_liaisons.php">Gestion des liaisons</a></li>
+                                <li><a class="dropdown-item" href="gestion_ressources.php">Gestion des ressources</a></li>
                             </ul>
                         </li>
                     <?php elseif ($user['role'] == 'formateur'): ?>
@@ -322,13 +323,16 @@ if (strpos($user['role'], 'stagiaire') === 0) {
             <h1>Bienvenue sur votre espace Stagiaire FPC, <?php echo $_SESSION['prenom']; ?> !</h1>
 
             <?php
-            // Récupérer les ressources visibles (récentes)
-            try {
-                $resStmt = $pdo->prepare('SELECT r.id, r.titre, r.description, r.chemin_fichier, r.uploader_id, u.prenom AS uploader_prenom, u.nom AS uploader_nom FROM ressources r LEFT JOIN utilisateurs u ON r.uploader_id = u.id WHERE r.visible = 1 ORDER BY r.id DESC LIMIT 12');
-                $resStmt->execute();
-                $ressources = $resStmt->fetchAll(PDO::FETCH_ASSOC);
-            } catch (Exception $e) {
-                $ressources = [];
+            // Récupérer les ressources visibles du formateur lié à ce stagiaire
+            $ressources = [];
+            if ($formateur) {
+                try {
+                    $resStmt = $pdo->prepare('SELECT r.id, r.titre, r.description, r.chemin_fichier, r.uploader_id, u.prenom AS uploader_prenom, u.nom AS uploader_nom FROM ressources r LEFT JOIN utilisateurs u ON r.uploader_id = u.id WHERE r.visible = 1 AND r.uploader_id = :fid ORDER BY r.date_upload DESC LIMIT 12');
+                    $resStmt->execute(['fid' => $formateur['id']]);
+                    $ressources = $resStmt->fetchAll(PDO::FETCH_ASSOC);
+                } catch (Exception $e) {
+                    $ressources = [];
+                }
             }
             // Documents disponibles (même configuration que dans mes_documents.php)
             $documents = [

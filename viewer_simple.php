@@ -8,6 +8,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 
 $pdo = ConnexionBDD();
 $ressource_id = (int)($_GET['id'] ?? 0);
+$user_id = (int)($_SESSION['user_id'] ?? 0);
 
 $stmt = $pdo->prepare('SELECT * FROM ressources WHERE id = :id LIMIT 1');
 $stmt->execute(['id' => $ressource_id]);
@@ -15,6 +16,32 @@ $ressource = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$ressource) {
     die('Ressource introuvable');
+}
+
+// Vérifier que l'utilisateur a le droit de voir cette ressource
+$hasAccess = false;
+
+// Les admins peuvent tout voir
+if ($_SESSION['role'] === 'admin') {
+    $hasAccess = true;
+}
+
+// Le formateur qui a uploadé peut voir
+if ($ressource['uploader_id'] == $user_id) {
+    $hasAccess = true;
+}
+
+// Si c'est un stagiaire, vérifier qu'il est lié au formateur
+if ($_SESSION['role'] === 'stagiaire FPC' || $_SESSION['role'] === 'stagiaire OP') {
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM stagiaire_formateur WHERE stagiaire_id = :sid AND formateur_id = :fid');
+    $stmt->execute(['sid' => $user_id, 'fid' => $ressource['uploader_id']]);
+    if ($stmt->fetchColumn() > 0) {
+        $hasAccess = true;
+    }
+}
+
+if (!$hasAccess) {
+    die('Vous n\'avez pas accès à cette ressource');
 }
 ?>
 <!DOCTYPE html>

@@ -203,7 +203,7 @@ function displayCategoryTree($tree, $level = 0) {
                     <li class="nav-item"><a class="nav-link" href="dashboard.php">Accueil</a></li>
                     <li class="nav-item"><a class="nav-link" href="gestion_utilisateurs.php">Gestion utilisateurs</a></li>
                     <li class="nav-item"><a class="nav-link" href="upload_ressource.php">Uploader une ressource</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="gestion_categories.php">Gestion catégories</a></li>
+                    <li class="nav-item"><a class="nav-link" href="gestion_ressources.php">Gestion ressources</a></li>
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item"><a class="nav-link" href="index.php">Déconnexion</a></li>
