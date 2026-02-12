@@ -1,3 +1,54 @@
+<?php
+/**
+ * ===================================================================
+ * RÉINITIALISATION DU MOT DE PASSE - DÉFINITION DU NOUVEAU MOT DE PASSE
+ * ===================================================================
+ * 
+ * Page finale du processus de réinitialisation du mot de passe.
+ * L'utilisateur arrive ici via le lien reçu par email.
+ * 
+ * FONCTIONNALITÉS :
+ * 
+ * 1. VALIDATION DU TOKEN :
+ *    - Vérification du token reçu en paramètre URL (?token=...)
+ *    - Contrôle de la validité et de l'expiration
+ *    - Récupération des infos utilisateur associées
+ * 
+ * 2. DÉFINITION DU NOUVEAU MOT DE PASSE :
+ *    - Formulaire de saisie du nouveau mot de passe
+ *    - Confirmation du mot de passe
+ *    - Validation : minimum 4 caractères, correspondance des deux champs
+ * 
+ * 3. MISE À JOUR SÉCURISÉE :
+ *    - Hachage du nouveau mot de passe avec SHA2-256
+ *    - Mise à jour en base de données
+ *    - Suppression du token utilisé (sécurité)
+ *    - Redirection vers la page de connexion
+ * 
+ * SÉCURITÉ :
+ *    - Token à usage unique
+ *    - Expiration automatique après délai défini (60 min par défaut)
+ *    - Hachage SHA2-256 du mot de passe
+ *    - Validation de la correspondance des mots de passe
+ * 
+ * WORKFLOW :
+ *    1. Utilisateur reçoit email avec lien + token
+ *    2. Clic sur le lien → arrive sur cette page
+ *    3. Vérification du token (verifierToken())
+ *    4. Si valide : formulaire de nouveau mot de passe
+ *    5. Soumission → mise à jour + suppression token
+ *    6. Redirection vers login avec message de succès
+ * 
+ * DÉPENDANCES :
+ *    - connexionbdd.php : Connexion à la base de données
+ *    - email_functions.php : Fonction verifierToken()
+ *    - footer.php : Pied de page commun
+ *    - Table password_resets : Stockage des tokens
+ * 
+ * ===================================================================
+ */
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -21,6 +72,7 @@ $success = '';
 $token_valid = false;
 $token_data = null;
 
+// Vérification du token reçu en paramètre GET
 if (isset($_GET['token'])) {
     $token = $_GET['token'];
     $token_data = verifierToken($pdo, $token);

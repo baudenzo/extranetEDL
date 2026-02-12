@@ -1,4 +1,34 @@
 <?php
+/**
+ * ===================================================================
+ * MES DOCUMENTS - PAGE STAGIAIRE FPC
+ * ===================================================================
+ * 
+ * Page permettant aux stagiaires FPC d'accéder à leurs documents
+ * administratifs et pédagogiques.
+ * 
+ * FONCTIONNALITÉS :
+ * - Accès aux documents clés : convention, guide d'animation, livret d'accueil, etc.
+ * - Affichage sous forme de cartes cliquables codées par couleur
+ * - Ouverture des documents via paramètre URL (?open=slug)
+ * - Modal de visualisation avec bouton de téléchargement
+ * 
+ * DOCUMENTS DISPONIBLES :
+ * - Convention / Contrat
+ * - Guide d'animation
+ * - Livret d'accueil
+ * - Catalogue de formations
+ * - Présentation du formateur
+ * - Registre d'accessibilité
+ * - Présentation des locaux
+ * 
+ * ACCÈS :
+ * - Réservé aux stagiaires FPC uniquement
+ * - Redirection vers dashboard si non autorisé
+ * 
+ * ===================================================================
+ */
+
 session_start();
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     header('Location: index.php');

@@ -1,17 +1,73 @@
 <?php
+/**
+ * ===================================================================
+ * GESTION DES LIAISONS FORMATEUR-STAGIAIRE
+ * ===================================================================
+ * 
+ * Page d'administration permettant de gérer les liaisons entre
+ * formateurs et stagiaires dans l'application EDL+.
+ * 
+ * FONCTIONNALITÉS :
+ * 
+ * 1. CRÉATION DE LIAISON :
+ *    - Association d'un stagiaire (OP ou FPC) à un formateur
+ *    - Formulaire avec dropdowns pour sélectionner stagiaire et formateur
+ *    - Utilisation de INSERT IGNORE pour éviter les doublons
+ * 
+ * 2. MODIFICATION DE LIAISON :
+ *    - Changement du formateur associé à un stagiaire
+ *    - Mise à jour via modal dédié
+ * 
+ * 3. SUPPRESSION DE LIAISON :
+ *    - Suppression d'une association formateur-stagiaire
+ *    - Confirmation avant suppression
+ * 
+ * 4. AFFICHAGE DES LIAISONS :
+ *    - Tableau listant toutes les liaisons actives
+ *    - Affichage du nom du stagiaire, du formateur et de la date de création
+ *    - Options de modification et suppression pour chaque liaison
+ * 
+ * TABLE CONCERNÉE :
+ * - stagiaire_formateur : Table de jonction contenant :
+ *   * id : Identifiant unique de la liaison
+ *   * stagiaire_id : Référence vers utilisateurs (stagiaire)
+ *   * formateur_id : Référence vers utilisateurs (formateur)
+ *   * created_at : Date de création de la liaison
+ * 
+ * ACCÈS :
+ * - Réservé exclusivement aux administrateurs
+ * - Redirection vers login si non autorisé
+ * 
+ * DÉPENDANCES :
+ * - connexionbdd.php : Connexion à la base de données
+ * - footer.php : Pied de page commun
+ * - Table utilisateurs : Pour récupérer les listes de formateurs et stagiaires
+ * 
+ * ===================================================================
+ */
+
 session_start();
 include 'connexionbdd.php';
 
-// accès réservé aux admins
+// ===================================================================
+// CONTRÔLE D'ACCÈS : ADMINISTRATEURS UNIQUEMENT
+// ===================================================================
+
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true || $_SESSION['role'] !== 'admin') {
     header('Location: index.php');
     exit;
 }
 
+// ===================================================================
+// INITIALISATION
+// ===================================================================
+
 $pdo = ConnexionBDD();
+
+// Message de feedback pour l'utilisateur (succès/erreur)
 $feedback = '';
 
-// informations de l'utilisateur utilisant la session (pour navbar)
+// Récupération des informations de l'administrateur connecté (pour la navbar)
 $current = null;
 if (isset($_SESSION['user_id'])) {
     $st = $pdo->prepare('SELECT prenom, nom, photo FROM utilisateurs WHERE id = :id');
@@ -19,37 +75,76 @@ if (isset($_SESSION['user_id'])) {
     $current = $st->fetch(PDO::FETCH_ASSOC);
 }
 
-// Actions: create, update (change formateur), delete
+// ===================================================================
+// TRAITEMENT DES ACTIONS (CRÉATION, MODIFICATION, SUPPRESSION)
+// ===================================================================
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
+    
     try {
+        // -----------------------------------------------------------
+        // ACTION : CRÉATION D'UNE NOUVELLE LIAISON
+        // -----------------------------------------------------------
         if ($action === 'create') {
             $stagiaire_id = intval($_POST['stagiaire_id'] ?? 0);
             $formateur_id = intval($_POST['formateur_id'] ?? 0);
-            if ($stagiaire_id <= 0 || $formateur_id <= 0) throw new Exception('Sélection invalide.');
+            
+            // Vérification de la validité des IDs
+            if ($stagiaire_id <= 0 || $formateur_id <= 0) {
+                throw new Exception('Sélection invalide.');
+            }
+            
+            // Insertion de la liaison (INSERT IGNORE évite les doublons)
             $stmt = $pdo->prepare('INSERT IGNORE INTO stagiaire_formateur (stagiaire_id, formateur_id) VALUES (:s, :f)');
             $stmt->execute(['s' => $stagiaire_id, 'f' => $formateur_id]);
             $feedback = 'Liaison ajoutée.';
+            
+        // -----------------------------------------------------------
+        // ACTION : MODIFICATION D'UNE LIAISON (CHANGEMENT DE FORMATEUR)
+        // -----------------------------------------------------------
         } elseif ($action === 'update') {
             $id = intval($_POST['id'] ?? 0);
             $formateur_id = intval($_POST['formateur_id'] ?? 0);
-            if ($id <= 0 || $formateur_id <= 0) throw new Exception('Données invalides pour la mise à jour.');
+            
+            // Vérification de la validité des données
+            if ($id <= 0 || $formateur_id <= 0) {
+                throw new Exception('Données invalides pour la mise à jour.');
+            }
+            
+            // Mise à jour du formateur associé
             $stmt = $pdo->prepare('UPDATE stagiaire_formateur SET formateur_id = :f WHERE id = :id');
             $stmt->execute(['f' => $formateur_id, 'id' => $id]);
             $feedback = 'Liaison mise à jour.';
+            
+        // -----------------------------------------------------------
+        // ACTION : SUPPRESSION D'UNE LIAISON
+        // -----------------------------------------------------------
         } elseif ($action === 'delete') {
             $id = intval($_POST['id'] ?? 0);
-            if ($id <= 0) throw new Exception('Identifiant invalide.');
+            
+            // Vérification que l'ID est valide
+            if ($id <= 0) {
+                throw new Exception('Identifiant invalide.');
+            }
+            
+            // Suppression de la liaison
             $stmt = $pdo->prepare('DELETE FROM stagiaire_formateur WHERE id = :id');
             $stmt->execute(['id' => $id]);
             $feedback = 'Liaison supprimée.';
         }
+        
     } catch (Exception $e) {
+        // Gestion des erreurs : affichage du message d'erreur
         $feedback = 'Erreur: ' . htmlspecialchars($e->getMessage());
     }
 }
 
-// Récupérer les données pour l'affichage
+// ===================================================================
+// RÉCUPÉRATION DES DONNÉES POUR L'AFFICHAGE
+// ===================================================================
+
+// Récupération de toutes les liaisons avec les noms des stagiaires et formateurs
 $stmt = $pdo->query('SELECT sf.id, sf.stagiaire_id, sf.formateur_id, sf.created_at,
                  s.prenom AS stagiaire_prenom, s.nom AS stagiaire_nom, s.photo AS stagiaire_photo,
                  f.prenom AS formateur_prenom, f.nom AS formateur_nom
@@ -59,17 +154,30 @@ $stmt = $pdo->query('SELECT sf.id, sf.stagiaire_id, sf.formateur_id, sf.created_
                       ORDER BY sf.id ASC');
 $liaisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Liste des formateurs (pour dropdown)
+// Récupération de la liste de tous les formateurs (pour les dropdowns)
 $stmt = $pdo->prepare("SELECT id, prenom, nom FROM utilisateurs WHERE role = 'formateur' ORDER BY prenom, nom");
 $stmt->execute();
 $formateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Liste des stagiaires (pour création)
+// Récupération de la liste de tous les stagiaires (OP et FPC) pour la création
 $stmt = $pdo->prepare("SELECT id, prenom, nom FROM utilisateurs WHERE role IN ('stagiaire OP','stagiaire FPC') ORDER BY prenom, nom");
 $stmt->execute();
 $stagiaires = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
+
+<!-- ===================================================================
+     STRUCTURE HTML: PAGE DE GESTION DES LIAISONS
+     ===================================================================
+     
+     Cette page affiche :
+     - Une barre de navigation admin
+     - Un bouton pour créer une nouvelle liaison
+     - Un tableau listant toutes les liaisons existantes
+     - Des modals pour créer/modifier/supprimer des liaisons
+     
+     ================================================================= -->
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>

@@ -1,3 +1,43 @@
+<?php
+/**
+ * ===================================================================
+ * MOT DE PASSE OUBLIÉ - DEMANDE DE RÉINITIALISATION
+ * ===================================================================
+ * 
+ * Page permettant aux utilisateurs de demander la réinitialisation
+ * de leur mot de passe en cas d'oubli.
+ * 
+ * FONCTIONNALITÉS :
+ * 
+ * 1. DEMANDE DE RÉINITIALISATION :
+ *    - Formulaire avec saisie de l'email
+ *    - Vérification de l'existence du compte
+ *    - Génération d'un token unique de réinitialisation
+ *    - Envoi d'un email avec lien de réinitialisation
+ * 
+ * 2. SÉCURITÉ :
+ *    - Message générique pour éviter l'énumération des comptes
+ *    - Token unique avec expiration (généralement 60 minutes)
+ *    - Lien direct vers reset_password.php avec token en paramètre
+ * 
+ * 3. WORKFLOW :
+ *    1. Utilisateur saisit son email
+ *    2. Système vérifie si le compte existe
+ *    3. Génération d'un token via creerTokenReset()
+ *    4. Envoi d'un email via envoyerEmailResetPassword()
+ *    5. Utilisateur clique sur le lien dans l'email
+ *    6. Redirection vers reset_password.php pour définir nouveau mot de passe
+ * 
+ * DÉPENDANCES :
+ * - connexionbdd.php : Connexion à la base de données
+ * - email_functions.php : Fonctions creerTokenReset() et envoyerEmailResetPassword()
+ * - footer.php : Pied de page commun
+ * - Table password_resets : Stockage des tokens
+ * 
+ * ===================================================================
+ */
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -19,6 +59,7 @@ session_start();
 $error = '';
 $success = '';
 
+// Traitement de la demande de réinitialisation
 if (isset($_POST['email'])) {
     $email = trim($_POST['email']);
     

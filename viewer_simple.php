@@ -1,4 +1,51 @@
 <?php
+/**
+ * ===================================================================
+ * VISIONNEUSE SIMPLIFIÉE DE RESSOURCES
+ * ===================================================================
+ * 
+ * Version allégée de la visionneuse de ressources, sans interface
+ * complète. Utilisée principalement pour les aperçus rapides dans
+ * les modals et popups.
+ * 
+ * FONCTIONNALITÉS :
+ * 
+ * 1. AFFICHAGE MINIMALISTE :
+ *    - Visualisation directe de la ressource
+ *    - Sans barre de navigation ni interface complète
+ *    - Adapté pour intégration en iframe ou modal
+ * 
+ * 2. CONTRÔLE D'ACCÈS :
+ *    - Vérification de connexion
+ *    - Contrôle des droits :
+ *      * Admin : accès à tout
+ *      * Formateur : ses propres ressources
+ *      * Stagiaires (OP/FPC) : ressources de leur formateur
+ * 
+ * 3. SUPPORT DES TYPES :
+ *    - PDF : visualisation via navigateur
+ *    - Images : affichage direct
+ *    - Audio/Vidéo : lecteurs HTML5
+ *    - Autres : message d'information
+ * 
+ * USAGE :
+ *    Appelé via : viewer_simple.php?id=123
+ *    Typiquement intégré dans des modals pour aperçu rapide
+ * 
+ * DIFFÉRENCE AVEC viewer.php :
+ *    - Pas de navbar ni footer
+ *    - Interface épurée
+ *    - Pas d'options de modification
+ *    - Plus léger et rapide
+ * 
+ * SÉCURITÉ :
+ *    - Mêmes contrôles d'accès que viewer.php
+ *    - Validation de l'ID ressource
+ *    - Vérification des liaisons formateur-stagiaire
+ * 
+ * ===================================================================
+ */
+
 session_start();
 require_once 'connexionbdd.php';
 

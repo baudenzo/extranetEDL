@@ -1,4 +1,42 @@
 <?php
+/**
+ * ===================================================================
+ * MES RESSOURCES - CONSULTATION DES RESSOURCES DU FORMATEUR
+ * ===================================================================
+ * 
+ * Page permettant aux stagiaires FPC de consulter et télécharger
+ * les ressources déposées par leur formateur.
+ * 
+ * FONCTIONNALITÉS :
+ * 
+ * 1. AFFICHAGE DES RESSOURCES :
+ *    - Liste des ressources du formateur lié
+ *    - Groupement par module du référentiel
+ *    - Infobulles avec le contenu du référentiel
+ *    - Icônes adaptées au type de fichier (PDF, audio, vidéo, image, autre)
+ * 
+ * 2. OPTIONS DE TRI :
+ *    - Par date décroissante (par défaut)
+ *    - Par date croissante
+ *    - Par code référentiel
+ *    - Par nom de fichier
+ *    - Par type de fichier
+ * 
+ * 3. TÉLÉCHARGEMENT :
+ *    - Accès direct aux fichiers pour visualisation/téléchargement
+ *    - Affichage du nom original et de la taille du fichier
+ * 
+ * ORGANISATION :
+ * - Les ressources sont groupées par module du référentiel
+ * - Vue responsive (table sur desktop, cards sur mobile)
+ * 
+ * ACCÈS :
+ * - Réservé aux stagiaires FPC uniquement
+ * - Affiche uniquement les ressources visible=1 de leur formateur
+ * 
+ * ===================================================================
+ */
+
 // Page de consultation des ressources pour les stagiaires FPC
 session_start();
 require_once 'connexionbdd.php';

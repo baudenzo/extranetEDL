@@ -1,3 +1,50 @@
+<?php
+/**
+ * ===================================================================
+ * FOOTER - PIED DE PAGE COMMUN
+ * ===================================================================
+ * 
+ * Section de pied de page réutilisable affichant les partenaires,
+ * financeurs et certifications de l'École des Langues Grand Calais.
+ * 
+ * CONTENU :
+ * 
+ * 1. SECTION PARTENAIRES ET FINANCEURS :
+ *    - Logo Ville de Calais
+ *    - Grand Calais Terre & Mer
+ *    - Les Cités Éducatives
+ *    - Quartiers 2030
+ *    - Préfet du Pas-de-Calais
+ * 
+ * 2. SECTION CERTIFICATIONS :
+ *    - Qualiopi (certification qualité)
+ *    - CLOE (certification linguistique)
+ * 
+ * 3. DESIGN :
+ *    - Layout responsive (colonnes sur desktop, empilé sur mobile)
+ *    - Séparateur vertical entre les deux sections
+ *    - Animation de vagues SVG (footer décoratif)
+ *    - Couleurs de marque : #199ea3 (bleu turquoise)
+ * 
+ * 4. FOOTER INFOS :
+ *    - Coordonnées : adresse, téléphone, email
+ *    - Horaires d'ouverture
+ *    - Copyright et mentions légales
+ *    - Liens vers réseaux sociaux
+ * 
+ * INCLUSION :
+ *    Fichier inclus dans toutes les pages via :
+ *    <?php include 'footer.php'; ?>
+ * 
+ * DÉPENDANCES :
+ *    - Images dans fournisseurs/ : logos des partenaires
+ *    - Bootstrap 5.3 : classes CSS
+ *    - styles.css : styles personnalisés
+ * 
+ * ===================================================================
+ */
+?>
+
 <!-- Section Nos Partenaires -->
 <section class="partenaires-section bg-white py-6">
     <div class="container">

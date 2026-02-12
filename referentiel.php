@@ -1,4 +1,51 @@
 <?php
+/**
+ * ===================================================================
+ * GESTION DU RÉFÉRENTIEL - INTERFACE ADMINISTRATEUR
+ * ===================================================================
+ * 
+ * Page de gestion du référentiel de compétences et modules de formation.
+ * Permet de structurer le contenu pédagogique et d'associer les ressources.
+ * 
+ * FONCTIONNALITÉS :
+ * 
+ * 1. CRÉATION D'ENTRÉE :
+ *    - Ajout d'un nouveau code au référentiel
+ *    - Définition du module, code unique, et contenu
+ *    - Association à un ou plusieurs niveaux (A, B, C, D, E, F, G, H, I)
+ * 
+ * 2. MODIFICATION :
+ *    - Édition individuelle via modal
+ *    - Modification en masse de tous les entrées affichées
+ *    - Mise à jour des modules, codes, contenus et niveaux
+ * 
+ * 3. SUPPRESSION :
+ *    - Suppression d'une entrée du référentiel
+ *    - Vérification des ressources liées (alerte si ressources associées)
+ * 
+ * 4. RECHERCHE ET FILTRAGE :
+ *    - Recherche par module, code ou contenu
+ *    - Filtrage par module spécifique
+ *    - Filtrage par niveau (A-I)
+ * 
+ * 5. AFFICHAGE :
+ *    - Vue en tableaux groupés par module
+ *    - Liste des niveaux associés à chaque entrée
+ *    - Interface responsive (table sur desktop, cards sur mobile)
+ * 
+ * STRUCTURE DU RÉFÉRENTIEL :
+ * - module : Nom du module de formation
+ * - code : Code unique identifiant l'entrée
+ * - contenu : Description détaillée de la compétence/contenu
+ * - niveaux : Liste de niveaux séparés par virgules (ex: "A,B,C")
+ * 
+ * ACCÈS :
+ * - Accessible à tous les utilisateurs connectés (lecture)
+ * - Modification réservée aux administrateurs (via rôle admin dans navbar)
+ * 
+ * ===================================================================
+ */
+
 session_start();
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     header('Location: index.php');

@@ -1,3 +1,52 @@
+<?php
+/**
+ * ===================================================================
+ * GESTION DES CATÉGORIES - INTERFACE ADMINISTRATEUR
+ * ===================================================================
+ * 
+ * Page d'administration permettant de gérer les catégories utilisées
+ * pour organiser le contenu de l'application EDL+ (ressources, référentiels).
+ * 
+ * FONCTIONNALITÉS :
+ * 
+ * 1. CRÉATION DE CATÉGORIE :
+ *    - Ajout d'une nouvelle catégorie avec nom et description
+ *    - Possibilité de définir une catégorie parente (hiérarchie)
+ *    - Ajout de mots-clés pour faciliter la recherche
+ * 
+ * 2. MODIFICATION DE CATÉGORIE :
+ *    - Édition des informations d'une catégorie existante
+ *    - Changement de catégorie parente
+ *    - Vérification anti-boucle (une catégorie ne peut pas être son propre parent)
+ * 
+ * 3. SUPPRESSION DE CATÉGORIE :
+ *    - Suppression d'une catégorie
+ *    - Attention : peut affecter les catégories enfants et les ressources liées
+ * 
+ * 4. HIÉRARCHIE :
+ *    - Système de catégories parent-enfant
+ *    - Organisation arborescente du contenu
+ * 
+ * STRUCTURE DE LA TABLE categories :
+ * - id : Identifiant unique
+ * - nom : Nom de la catégorie
+ * - description : Description détaillée
+ * - parent_id : ID de la catégorie parente (NULL si racine)
+ * - mots_cles : Mots-clés pour la recherche
+ * - created_at : Date de création
+ * 
+ * ACCÈS :
+ * - Réservé exclusivement aux administrateurs
+ * - Redirection si non autorisé
+ * 
+ * DÉPENDANCES :
+ * - connexionbdd.php : Connexion à la base de données
+ * - footer.php : Pied de page commun
+ * 
+ * ===================================================================
+ */
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -10,14 +59,20 @@
 </head>
 
 <?php
+// ===================================================================
+// CONTRÔLE D'ACCÈS ET INITIALISATION
+// ===================================================================
+
 session_start();
 include 'connexionbdd.php';
 
+// Vérification que l'utilisateur est connecté
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     header('Location: index.php');
     exit;
 }
 
+// Vérification que l'utilisateur est administrateur
 if ($_SESSION['role'] !== 'admin') {
     header('Location: dashboard.php');
     exit;
@@ -26,20 +81,37 @@ if ($_SESSION['role'] !== 'admin') {
 $pdo = ConnexionBDD();
 $user_id = $_SESSION['user_id'];
 
+// Récupération des informations de l'utilisateur connecté
 $stmt = $pdo->prepare('SELECT * FROM utilisateurs WHERE id = :id');
 $stmt->execute(['id' => $user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
+/**
+ * ====================================
+ * FONCTION : getDefaultPhoto
+ * ====================================
+ * Retourne le chemin vers la photo de profil par défaut selon le sexe.
+ * 
+ * @param string $sexe Le sexe de l'utilisateur
+ * @return string Le chemin vers la photo par défaut
+ */
 function getDefaultPhoto($sexe) {
     if ($sexe === 'feminin') return 'pp/defaultf.png';
     if ($sexe === 'masculin') return 'pp/defaulth.jpg';
     return 'pp/default.jpg';
 }
 
+// Messages d'erreur et de succès
 $error = '';
 $success = '';
 
-// Créer une nouvelle catégorie
+// ===================================================================
+// TRAITEMENT DES ACTIONS (CRÉATION, MODIFICATION, SUPPRESSION)
+// ===================================================================
+
+// -----------------------------------------------------------
+// ACTION : CRÉATION D'UNE NOUVELLE CATÉGORIE
+// -----------------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create') {
     try {
         $nom = trim($_POST['nom'] ?? '');
@@ -48,10 +120,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $niveau = !empty($_POST['niveau']) ? $_POST['niveau'] : null;
         $mots_cles = trim($_POST['mots_cles'] ?? '');
         
+        // Vérification que le nom est fourni
         if (empty($nom)) {
             throw new Exception('Le nom de la catégorie est obligatoire.');
         }
         
+        // Insertion de la nouvelle catégorie
         $stmt = $pdo->prepare('INSERT INTO categories (nom, description, parent_id, mots_cles) VALUES (:nom, :description, :parent_id, :mots_cles)');
         $stmt->execute([
             'nom' => $nom,
@@ -67,7 +141,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Modifier une catégorie
+// -----------------------------------------------------------
+// ACTION : MODIFICATION D'UNE CATÉGORIE EXISTANTE
+// -----------------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update') {
     try {
         $id = (int)$_POST['id'];
@@ -76,15 +152,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $parent_id = !empty($_POST['parent_id']) ? (int)$_POST['parent_id'] : null;
         $mots_cles = trim($_POST['mots_cles'] ?? '');
         
+        // Vérification que le nom est fourni
         if (empty($nom)) {
             throw new Exception('Le nom de la catégorie est obligatoire.');
         }
         
-        // Vérifier qu'on ne crée pas une boucle (parent = enfant)
+        // Vérification anti-boucle : une catégorie ne peut pas être son propre parent
         if ($parent_id == $id) {
             throw new Exception('Une catégorie ne peut pas être son propre parent.');
         }
         
+        // Mise à jour de la catégorie
         $stmt = $pdo->prepare('UPDATE categories SET nom = :nom, description = :description, parent_id = :parent_id, mots_cles = :mots_cles WHERE id = :id');
         $stmt->execute([
             'nom' => $nom,
@@ -101,12 +179,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Supprimer une catégorie
+// -----------------------------------------------------------
+// ACTION : SUPPRESSION D'UNE CATÉGORIE
+// -----------------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
     try {
         $id = (int)$_POST['id'];
         
-        // Vérifier si des ressources sont liées
+        // Vérification 1 : Vérifier si des ressources sont liées à cette catégorie
         $stmt = $pdo->prepare('SELECT COUNT(*) FROM ressources_categories WHERE categorie_id = :id');
         $stmt->execute(['id' => $id]);
         $count = $stmt->fetchColumn();
@@ -115,7 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             throw new Exception('Impossible de supprimer cette catégorie : ' . $count . ' ressource(s) y sont liées.');
         }
         
-        // Vérifier si des catégories enfants existent
+        // Vérification 2 : Vérifier si des catégories enfants existent
         $stmt = $pdo->prepare('SELECT COUNT(*) FROM categories WHERE parent_id = :id');
         $stmt->execute(['id' => $id]);
         $countChildren = $stmt->fetchColumn();
@@ -124,6 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             throw new Exception('Impossible de supprimer cette catégorie : ' . $countChildren . ' sous-catégorie(s) en dépendent.');
         }
         
+        // Si aucune ressource ni sous-catégorie, procéder à la suppression
         $stmt = $pdo->prepare('DELETE FROM categories WHERE id = :id');
         $stmt->execute(['id' => $id]);
         
@@ -134,14 +215,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Récupérer toutes les catégories
+// ===================================================================
+// RÉCUPÉRATION ET ORGANISATION DES CATÉGORIES
+// ===================================================================
+
+// Récupérer toutes les catégories avec leur catégorie parente
 $categories = $pdo->query('SELECT c.*, p.nom as parent_nom FROM categories c LEFT JOIN categories p ON c.parent_id = p.id ORDER BY c.parent_id, c.nom')->fetchAll(PDO::FETCH_ASSOC);
 
-// Organiser les catégories par hiérarchie
+/**
+ * ====================================
+ * FONCTION : buildCategoryTree
+ * ====================================
+ * Construit une structure arborescente des catégories
+ * à partir d'une liste plate, en respectant la hiérarchie parent-enfant.
+ * 
+ * Cette fonction est récursive et organise les catégories en arbre.
+ * 
+ * @param array $categories Liste plate de toutes les catégories
+ * @param int|null $parentId ID de la catégorie parente (null pour les catégories racines)
+ * @return array Arbre des catégories avec leurs enfants
+ */
 function buildCategoryTree($categories, $parentId = null) {
     $branch = [];
+    
+    // Parcourir toutes les catégories pour trouver les enfants du parent actuel
     foreach ($categories as $category) {
         if ($category['parent_id'] == $parentId) {
+            // Récursivement récupérer les enfants de cette catégorie
             $children = buildCategoryTree($categories, $category['id']);
             if ($children) {
                 $category['children'] = $children;

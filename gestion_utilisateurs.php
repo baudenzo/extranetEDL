@@ -1,16 +1,83 @@
 <?php
+/**
+ * ===================================================================
+ * GESTION DES UTILISATEURS - INTERFACE ADMINISTRATEUR
+ * ===================================================================
+ * 
+ * Page d'administration permettant la gestion complète (CRUD) des
+ * utilisateurs de l'application EDL+.
+ * 
+ * FONCTIONNALITÉS :
+ * 
+ * 1. CRÉATION D'UTILISATEUR :
+ *    - Formulaire de création avec tous les champs nécessaires
+ *    - Upload de photo de profil (ou photo par défaut selon sexe)
+ *    - Option d'envoi d'email avec identifiants
+ *    - Génération automatique du mot de passe haché (SHA2-256)
+ * 
+ * 2. MODIFICATION D'UTILISATEUR :
+ *    - Modification en masse : édition de tous les utilisateurs affichés
+ *    - Modification individuelle : via modal détaillé
+ *    - Changement de mot de passe optionnel
+ *    - Upload de nouvelle photo de profil
+ * 
+ * 3. SUPPRESSION D'UTILISATEUR :
+ *    - Suppression avec confirmation
+ *    - Nettoyage de la photo de profil
+ *    - Suppression des liaisons dans stagiaire_formateur
+ * 
+ * 4. RECHERCHE :
+ *    - Recherche par prénom, nom, email, login
+ *    - Filtrage en temps réel de la liste
+ * 
+ * RÔLES SUPPORTÉS :
+ * - admin : Administrateur
+ * - formateur : Formateur
+ * - stagiaire OP : Stagiaire Objectif Professionnel
+ * - stagiaire FPC : Stagiaire Formation Professionnelle Continue
+ * 
+ * OPTIONS SUPPLÉMENTAIRES :
+ * - Distanciel : Disponible pour les stagiaires FPC
+ * 
+ * ACCÈS :
+ * - Réservé exclusivement aux administrateurs
+ * - Redirection si non autorisé
+ * 
+ * SÉCURITÉ :
+ * - Validation et sanitisation de tous les champs
+ * - Mots de passe hachés avec SHA2-256
+ * - Contrôle des rôles autorisés
+ * - Vérification des formats de fichiers (images uniquement)
+ * 
+ * DÉPENDANCES :
+ * - connexionbdd.php : Connexion à la base de données
+ * - email_functions.php : Fonction envoyerEmailNouveauCompte()
+ * - footer.php : Pied de page commun
+ * 
+ * ===================================================================
+ */
+
 session_start();
 include 'connexionbdd.php';
 include 'email_functions.php';
 
-// accès réservé aux admins
+// ===================================================================
+// CONTRÔLE D'ACCÈS : ADMINISTRATEURS UNIQUEMENT
+// ===================================================================
+
+// Vérification que l'utilisateur est connecté et a le rôle admin
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true || $_SESSION['role'] !== 'admin') {
     header('Location: index.php');
     exit;
 }
 
+// ===================================================================
+// INITIALISATION
+// ===================================================================
+
 $pdo = ConnexionBDD();
-// informations de l'utilisateur utilisant la session
+
+// Récupération des informations de l'administrateur connecté (pour l'affichage)
 $current = null;
 if (isset($_SESSION['user_id'])) {
     $st = $pdo->prepare('SELECT prenom, nom, photo FROM utilisateurs WHERE id = :id');
@@ -18,31 +85,67 @@ if (isset($_SESSION['user_id'])) {
     $current = $st->fetch(PDO::FETCH_ASSOC);
 }
 
-
+/**
+ * ====================================
+ * FONCTION : sanitize_role
+ * ====================================
+ * Valide que le rôle est parmi les valeurs autorisées.
+ * 
+ * @param string $role Le rôle à valider
+ * @return string|null Le rôle validé ou null si invalide
+ */
 function sanitize_role($role) {
     $allowed = ['admin', 'formateur', 'stagiaire OP', 'stagiaire FPC'];
     return in_array($role, $allowed, true) ? $role : null;
 }
 
+/**
+ * ====================================
+ * FONCTION : sanitize_sexe
+ * ====================================
+ * Valide que le sexe est parmi les valeurs autorisées.
+ * 
+ * @param string $sexe Le sexe à valider
+ * @return string|null Le sexe validé ou null si invalide
+ */
 function sanitize_sexe($sexe) {
     $allowed = ['masculin', 'feminin', 'autre'];
     return in_array($sexe, $allowed, true) ? $sexe : null;
 }
 
+/**
+ * ====================================
+ * FONCTION : getDefaultPhoto
+ * ====================================
+ * Retourne le chemin vers la photo de profil par défaut
+ * selon le sexe de l'utilisateur.
+ * 
+ * @param string $sexe Le sexe de l'utilisateur
+ * @return string Le chemin vers la photo par défaut
+ */
 function getDefaultPhoto($sexe) {
     if ($sexe === 'feminin') return 'pp/defaultf.png';
     if ($sexe === 'masculin') return 'pp/defaulth.jpg';
     return 'pp/default.jpg';
 }
 
+// Message de feedback pour l'utilisateur (succès/erreur)
 $feedback = '';
+
+// Paramètre de recherche
 $q = trim($_GET['q'] ?? '');
 
-// actions pour créer, supprimer ou modifier un utilisateur
+// ===================================================================
+// TRAITEMENT DES ACTIONS (CRÉATION, MODIFICATION, SUPPRESSION)
+// ===================================================================
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
     try {
+        // -----------------------------------------------------------
+        // ACTION : CRÉATION D'UN NOUVEL UTILISATEUR
+        // -----------------------------------------------------------
         if ($action === 'create') {
             $email = trim($_POST['email'] ?? '');
             $prenom = trim($_POST['prenom'] ?? '');
@@ -53,10 +156,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $password = trim($_POST['password'] ?? '');
             $distanciel = isset($_POST['distanciel']) && $_POST['distanciel'] === '1' ? 1 : 0;
 
+            // Vérification que tous les champs obligatoires sont remplis
             if (!$email || !$prenom || !$nom || !$numlogin || !$role || !$sexe || !$password) {
                 throw new Exception('Tous les champs sont requis pour la création.');
             }
 
+            // Insertion du nouvel utilisateur dans la base de données
+            // Le mot de passe est haché avec SHA2-256
             $stmt = $pdo->prepare('INSERT INTO utilisateurs (email, prenom, nom, numlogin, password, role, sexe, distanciel) VALUES (:email, :prenom, :nom, :numlogin, SHA2(:password, 256), :role, :sexe, :distanciel)');
             $stmt->execute([
                 'email' => $email,
@@ -68,21 +174,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'sexe' => $sexe,
                 'distanciel' => $distanciel,
             ]);
-            // dernier id inséré
+            
+            // Récupération de l'ID du nouvel utilisateur créé
             $newId = (int)$pdo->lastInsertId();
 
-            // gestion de la photo de profil optionnelle
+            // --- Gestion de la photo de profil ---
+            // Si une photo est uploadée, la traiter, sinon utiliser la photo par défaut
             if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
                 $tmpPath = $_FILES['photo']['tmp_name'];
                 $origName = $_FILES['photo']['name'];
                 $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
                 $allowed = ['jpg', 'jpeg', 'png'];
+                
+                // Vérification du format de l'image
                 if (in_array($ext, $allowed, true)) {
                     $imgDir = __DIR__ . DIRECTORY_SEPARATOR . 'pp';
+                    
+                    // Vérification que le dossier pp existe
                     if (!is_dir($imgDir)) {
-                        // Si le dossier pp est manquant, garder la photo par défaut
                         $feedback = 'Utilisateur créé. Dossier pp introuvable, photo ignorée.';
                     } else {
+                        // Enregistrement de la photo avec l'ID de l'utilisateur comme nom
                         $targetFs = $imgDir . DIRECTORY_SEPARATOR . $newId . '.' . $ext;
                         $targetWeb = 'pp/' . $newId . '.' . $ext;
                         if (move_uploaded_file($tmpPath, $targetFs)) {
@@ -97,12 +209,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $feedback = 'Utilisateur créé. Format de photo non supporté (autorisé: jpg, jpeg, png).';
                 }
             } else {
+                // Pas de photo uploadée : utilisation de la photo par défaut selon le sexe
                 $defaultPhoto = getDefaultPhoto($sexe);
                 $up = $pdo->prepare('UPDATE utilisateurs SET photo = :photo WHERE id = :id');
                 $up->execute(['photo' => $defaultPhoto, 'id' => $newId]);
                 $feedback = 'Utilisateur créé avec succès.';
             }
             
+            // --- Option : Envoi d'email avec les identifiants ---
             if (isset($_POST['envoyer_email']) && $_POST['envoyer_email'] === '1') {
                 $resultEmail = envoyerEmailNouveauCompte($email, $prenom . ' ' . $nom, $numlogin, $password);
                 if ($resultEmail['success']) {
@@ -111,6 +225,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $feedback .= ' Attention : échec de l\'envoi de l\'email.';
                 }
             }
+            
+        // -----------------------------------------------------------
+        // ACTION : MISE À JOUR MULTIPLE DE TOUS LES UTILISATEURS
+        // -----------------------------------------------------------
         } elseif ($action === 'update_all') {
             // Mise à jour multiple de tous les utilisateurs modifiés
             $ids = $_POST['ids'] ?? [];
@@ -124,6 +242,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $updateCount = 0;
             $distanciels = $_POST['distanciels'] ?? [];
+            
+            // Itération sur tous les utilisateurs à mettre à jour
             foreach ($ids as $id) {
                 $id = intval($id);
                 $email = trim($emails[$id] ?? '');
@@ -135,8 +255,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $password = trim($passwords[$id] ?? '');
                 $dist = isset($distanciels[$id]) && $distanciels[$id] == '1' ? 1 : 0;
                 
+                // Vérification de la validité des données
                 if ($id > 0 && $email && $prenom && $nom && $numlogin && $role && $sexe) {
-                    // Récupérer les valeurs actuelles
+                    // Récupérer les valeurs actuelles pour détecter les changements
                     $stmt_current = $pdo->prepare('SELECT email, prenom, nom, numlogin, role, sexe FROM utilisateurs WHERE id = :id');
                     $stmt_current->execute(['id' => $id]);
                     $current = $stmt_current->fetch(PDO::FETCH_ASSOC);
@@ -151,7 +272,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                       $current['sexe'] !== $sexe ||
                                       $password !== '');
                         
+                        // Mise à jour uniquement si des changements ont été détectés
                         if ($hasChanged) {
+                            // Si un nouveau mot de passe est fourni, le hacher
                             if ($password !== '') {
                                 $stmt = $pdo->prepare('UPDATE utilisateurs SET email = :email, prenom = :prenom, nom = :nom, numlogin = :numlogin, role = :role, sexe = :sexe, distanciel = :distanciel, password = SHA2(:password, 256) WHERE id = :id');
                                 $stmt->execute([
@@ -184,6 +307,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
             $feedback = $updateCount > 0 ? "$updateCount utilisateur(s) mis à jour." : 'Aucune modification effectuée.';
+            
+        // -----------------------------------------------------------
+        // ACTION : MISE À JOUR INDIVIDUELLE D'UN UTILISATEUR
+        // -----------------------------------------------------------
         } elseif ($action === 'update') {
             $id = intval($_POST['id'] ?? 0);
             $email = trim($_POST['email'] ?? '');
@@ -195,11 +322,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $distanciel = isset($_POST['distanciel']) && $_POST['distanciel'] === '1' ? 1 : 0;
             $password = trim($_POST['password'] ?? '');
 
+            // Vérification de la validité des données
             if ($id <= 0 || !$email || !$prenom || !$nom || !$numlogin || !$role || !$sexe) {
                 throw new Exception('Champs invalides pour la mise à jour.');
             }
 
+            // Mise à jour avec ou sans changement de mot de passe
             if ($password !== '') {
+                // Mise à jour avec nouveau mot de passe (haché avec SHA2-256)
                 $stmt = $pdo->prepare('UPDATE utilisateurs SET email = :email, prenom = :prenom, nom = :nom, numlogin = :numlogin, role = :role, sexe = :sexe, distanciel = :distanciel, password = SHA2(:password, 256) WHERE id = :id');
                 $stmt->execute([
                     'email' => $email,
@@ -213,6 +343,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'id' => $id,
                 ]);
             } else {
+                // Mise à jour sans changement de mot de passe
                 $stmt = $pdo->prepare('UPDATE utilisateurs SET email = :email, prenom = :prenom, nom = :nom, numlogin = :numlogin, role = :role, sexe = :sexe, distanciel = :distanciel WHERE id = :id');
                 $stmt->execute([
                     'email' => $email,
@@ -226,22 +357,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
             }
             $feedback = 'Utilisateur mis à jour.';
+            
+        // -----------------------------------------------------------
+        // ACTION : SUPPRESSION D'UN UTILISATEUR
+        // -----------------------------------------------------------
         } elseif ($action === 'delete') {
             $id = intval($_POST['id'] ?? 0);
+            
+            // Vérification que l'ID est valide
             if ($id <= 0) {
                 throw new Exception('Identifiant invalide pour suppression.');
             }
+            
+            // Suppression de l'utilisateur de la base de données
+            // Note : Les liaisons dans stagiaire_formateur sont supprimées via CASCADE
             $stmt = $pdo->prepare('DELETE FROM utilisateurs WHERE id = :id');
             $stmt->execute(['id' => $id]);
             $feedback = 'Utilisateur supprimé.';
         }
+        
     } catch (Exception $e) {
+        // Gestion des erreurs : affichage du message d'erreur
         $feedback = 'Erreur: ' . htmlspecialchars($e->getMessage());
     }
 }
 
-// recherche des utilisateurs en fonction du nom ou prénom
+// ===================================================================
+// RECHERCHE ET RÉCUPÉRATION DES UTILISATEURS
+// ===================================================================
+
+// Si un terme de recherche est fourni (paramètre 'q' dans l'URL)
 if ($q !== '') {
+    // Recherche dans email, prénom, nom et login
     $stmt = $pdo->prepare('SELECT id, email, prenom, nom, numlogin, role, sexe, photo, created_at, distanciel
                             FROM utilisateurs
                             WHERE email LIKE :q OR prenom LIKE :q OR nom LIKE :q OR numlogin LIKE :q
@@ -250,10 +397,24 @@ if ($q !== '') {
     $stmt->execute(['q' => $like]);
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
+    // Si aucune recherche : récupérer tous les utilisateurs
     $stmt = $pdo->query('SELECT id, email, prenom, nom, numlogin, role, sexe, photo, created_at, distanciel FROM utilisateurs ORDER BY id ASC');
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 ?>
+
+<!-- ===================================================================
+     STRUCTURE HTML: PAGE DE GESTION DES UTILISATEURS
+     ===================================================================
+     
+     Cette page affiche :
+     - Une barre de navigation admin
+     - Un bouton pour créer un nouvel utilisateur
+     - Une barre de recherche
+     - Un tableau/liste des utilisateurs avec options d'édition
+     - Des modals pour créer/modifier/supprimer
+     
+     ================================================================= -->
 
 <!DOCTYPE html>
 <html lang="fr">

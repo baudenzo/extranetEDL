@@ -1,3 +1,49 @@
+<?php
+/**
+ * ===================================================================
+ * UPLOAD DE RESSOURCE - VERSION ALTERNATIVE
+ * ===================================================================
+ * 
+ * Page alternative pour l'upload de ressources pédagogiques.
+ * Version simplifiée par rapport à deposer_ressource.php.
+ * 
+ * NOTE : Ce fichier semble être une version antérieure ou alternative
+ * de deposer_ressource.php. Les deux ont des fonctionnalités similaires.
+ * 
+ * FONCTIONNALITÉS :
+ * 
+ * 1. UPLOAD DE FICHIER :
+ *    - Formulaire d'upload avec titre et description
+ *    - Support des mêmes types que deposer_ressource.php
+ *    - Validation via upload_config.php
+ * 
+ * 2. ORGANISATION :
+ *    - Stockage dans uploads/ selon le type
+ *    - Génération de noms uniques
+ *    - Métadonnées enregistrées en base
+ * 
+ * 3. ACCÈS :
+ *    - Réservé aux formateurs et admins
+ *    - Vérification de session
+ * 
+ * DIFFÉRENCES AVEC deposer_ressource.php :
+ *    - Interface potentiellement différente
+ *    - Peut manquer certaines fonctionnalités avancées
+ *    - À vérifier si ce fichier est encore utilisé
+ * 
+ * RECOMMANDATION :
+ *    Si ce fichier fait doublon avec deposer_ressource.php,
+ *    considérer sa suppression ou fusion pour éviter confusion.
+ * 
+ * DÉPENDANCES :
+ *    - connexionbdd.php : Connexion BDD
+ *    - upload_config.php : Configuration des uploads
+ *    - Table ressources : Stockage des métadonnées
+ * 
+ * ===================================================================
+ */
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>

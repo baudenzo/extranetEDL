@@ -1,4 +1,51 @@
 <?php
+/**
+ * ===================================================================
+ * DÉPÔT DE RESSOURCES - PAGE FORMATEUR
+ * ===================================================================
+ * 
+ * Page permettant aux formateurs de déposer des ressources pédagogiques
+ * pour leurs stagiaires FPC.
+ * 
+ * FONCTIONNALITÉS :
+ * 
+ * 1. UPLOAD DE FICHIERS :
+ *    - Support de multiples formats : PDF, audio (MP3, WAV, OGG), vidéo (MP4, AVI), 
+ *      images (JPG, PNG, GIF), documents Office (DOC, DOCX, XLS, XLSX, PPT, PPTX)
+ *    - Limite de taille : 200 Mo par fichier
+ *    - Organisation automatique par type dans les sous-dossiers uploads/
+ *    - Génération de noms de fichiers uniques pour éviter les conflits
+ * 
+ * 2. ASSOCIATION AU RÉFÉRENTIEL :
+ *    - Lien optionnel avec un code du référentiel
+ *    - Dropdown de sélection organisé par module
+ *    - Permet aux stagiaires de filtrer les ressources par module
+ * 
+ * 3. GESTION DE LA VISIBILITÉ :
+ *    - Option "visible" pour contrôler l'affichage aux stagiaires
+ *    - Par défaut : visible
+ * 
+ * TYPES DE FICHIERS SUPPORTÉS :
+ * - PDF : documents, cours
+ * - Audio : MP3, WAV, OGG
+ * - Vidéo : MP4, MPEG, AVI
+ * - Images : JPG, JPEG, PNG, GIF
+ * - Office : DOC, DOCX, XLS, XLSX, PPT, PPTX
+ * - Autres : TXT, ZIP
+ * 
+ * SÉCURITÉ :
+ * - Vérification du MIME type
+ * - Validation de l'extension
+ * - Limite de taille stricte (200 Mo)
+ * - Stockage organisé par type dans des sous-dossiers
+ * 
+ * ACCÈS :
+ * - Réservé aux formateurs ayant des stagiaires FPC
+ * - Admins ont toujours accès
+ * 
+ * ===================================================================
+ */
+
 // Page de dépôt de ressources pour les formateurs FPC
 session_start();
 require_once 'connexionbdd.php';

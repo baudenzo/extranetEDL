@@ -1,24 +1,102 @@
 <?php
+/**
+ * ===================================================================
+ * PAGE DASHBOARD - PAGE D'ACCUEIL PRINCIPALE
+ * ===================================================================
+ * 
+ * Page principale de l'application EDL+ affichée après connexion.
+ * L'affichage s'adapte selon le rôle de l'utilisateur connecté.
+ * 
+ * RÔLES SUPPORTÉS :
+ * 
+ * 1. ADMINISTRATEUR :
+ *    - Accès à toutes les fonctionnalités de gestion
+ *    - Menu : Gestion utilisateurs, Référentiel, Liaisons, Ressources
+ *    - Affichage des statistiques globales
+ * 
+ * 2. FORMATEUR :
+ *    - Vue de ses stagiaires (OP et/ou FPC)
+ *    - Accès au dépôt de ressources (si stagiaires FPC)
+ *    - Suivi des progressions des stagiaires
+ * 
+ * 3. STAGIAIRE OP (Objectif Professionnel) :
+ *    - Calendrier des séances
+ *    - Accès aux ressources
+ *    - Informations sur le formateur lié
+ * 
+ * 4. STAGIAIRE FPC (Formation Professionnelle Continue) :
+ *    - Mes Documents (dépôt personnel)
+ *    - Ressources du formateur
+ *    - Informations sur le formateur lié
+ *    - Menu "Distanciel" si option activée
+ * 
+ * FONCTIONNALITÉS COMMUNES :
+ * - Barre de navigation adaptée au rôle
+ * - Accès au profil utilisateur
+ * - Photo de profil personnalisée ou par défaut
+ * - Déconnexion
+ * 
+ * SÉCURITÉ :
+ * - Vérification de session obligatoire
+ * - Redirection vers login si non connecté
+ * - Contrôle d'accès basé sur les rôles
+ * 
+ * DÉPENDANCES :
+ * - connexionbdd.php : Connexion à la base de données
+ * - footer.php : Pied de page commun
+ * - Table stagiaire_formateur : Liaisons formateur/stagiaire
+ * 
+ * ===================================================================
+ */
+
+// ===================================================================
+// VÉRIFICATION DE SESSION ET AUTHENTIFICATION
+// ===================================================================
+
 session_start();
+
+// Redirection vers la page de connexion si l'utilisateur n'est pas authentifié
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     header('Location: index.php');
     exit;
 }
 
+// ===================================================================
+// RÉCUPÉRATION DES INFORMATIONS DE L'UTILISATEUR
+// ===================================================================
+
 include 'connexionbdd.php';
 $pdo = ConnexionBDD();
 $user_id = $_SESSION['user_id'];
 
+// Récupération des données complètes de l'utilisateur connecté
 $stmt = $pdo->prepare('SELECT * FROM utilisateurs WHERE id = :id');
 $stmt->execute(['id' => $user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
+// Sécurité : vérification que l'utilisateur existe
 if (!$user) {
     echo "Utilisateur non trouvé.";
     exit;
 }
 
-// Fonction pour adapter le rôle selon le sexe
+/**
+ * ====================================
+ * FONCTION : getRoleLabel
+ * ====================================
+ * Adapte l'affichage du rôle selon le sexe de l'utilisateur
+ * pour une inclusivité linguistique.
+ * 
+ * Exemples :
+ * - Admin masculin : "Administrateur"
+ * - Admin féminin : "Administratrice"
+ * - Formateur masculin : "Formateur"
+ * - Formatrice féminin : "Formatrice"
+ * 
+ * @param string $role Le rôle de l'utilisateur (admin, formateur, stagiaire...)
+ * @param string $sexe Le sexe de l'utilisateur (masculin, feminin, autre)
+ * @return string Le libellé du rôle adapté
+ */
 function getRoleLabel($role, $sexe) {
     if ($role === 'admin') {
         if ($sexe === 'feminin') return 'Administratrice';
@@ -30,21 +108,39 @@ function getRoleLabel($role, $sexe) {
         if ($sexe === 'autre') return 'Formateur/Formatrice';
         return 'Formateur';
     }
+    // Pour les autres rôles (stagiaires), retourner le rôle avec majuscule
     return ucfirst($role);
 }
 
+/**
+ * ====================================
+ * FONCTION : getDefaultPhoto
+ * ====================================
+ * Retourne le chemin vers la photo de profil par défaut
+ * selon le sexe de l'utilisateur.
+ * 
+ * @param string $sexe Le sexe de l'utilisateur (masculin, feminin, autre)
+ * @return string Le chemin vers la photo par défaut
+ */
 function getDefaultPhoto($sexe) {
     if ($sexe === 'feminin') return 'pp/defaultf.png';
     if ($sexe === 'masculin') return 'pp/defaulth.jpg';
     return 'pp/default.jpg';
 }
 
-// Si l'utilisateur est formateur, préparer les données pour afficher l'espace formateur sur la page d'accueil
+// ===================================================================
+// CHARGEMENT DES DONNÉES SPÉCIFIQUES AU RÔLE
+// ===================================================================
+
+// --- SI FORMATEUR : Récupération de ses stagiaires ---
 if ($user['role'] === 'formateur') {
-    // récupérer les stagiaires liés à ce formateur
+    // Récupérer tous les stagiaires liés à ce formateur
     $st = $pdo->prepare('SELECT u.id, u.prenom, u.nom, u.role, u.photo FROM utilisateurs u JOIN stagiaire_formateur sf ON u.id = sf.stagiaire_id WHERE sf.formateur_id = :fid ORDER BY u.prenom, u.nom');
     $st->execute(['fid' => $user_id]);
     $stagiaires = $st->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Déterminer si le formateur a des stagiaires FPC et/ou OP
+    // Utile pour afficher conditionnellement certaines fonctionnalités
     $hasFPC = false;
     $hasOP = false;
     foreach ($stagiaires as $r) {
@@ -55,14 +151,26 @@ if ($user['role'] === 'formateur') {
     }
 }
 
-// Si l'utilisateur est stagiaire, récupérer son formateur lié (si présent)
+// --- SI STAGIAIRE : Récupération de son formateur ---
 $formateur = null;
 if (strpos($user['role'], 'stagiaire') === 0) {
+    // Récupérer le formateur lié à ce stagiaire (s'il existe)
     $fstmt = $pdo->prepare('SELECT f.id, f.prenom, f.nom, f.email, f.photo FROM utilisateurs f JOIN stagiaire_formateur sf ON f.id = sf.formateur_id WHERE sf.stagiaire_id = :sid LIMIT 1');
     $fstmt->execute(['sid' => $user_id]);
     $formateur = $fstmt->fetch(PDO::FETCH_ASSOC);
 }
-?>
+?>  
+
+<!-- ===================================================================
+     STRUCTURE HTML: PAGE DASHBOARD
+     ===================================================================
+     
+     Cette page contient :
+     - Une barre de navigation adaptée au rôle de l'utilisateur
+     - Une section de bienvenue avec photo et informations utilisateur
+     - Du contenu dynamique selon le rôle (admin/formateur/stagiaire)
+     
+     ================================================================= -->
 
 <!DOCTYPE html>
 <html lang="fr">
@@ -83,6 +191,17 @@ if (strpos($user['role'], 'stagiaire') === 0) {
     </style>
 </head>
 <body>
+    <!-- ===================================================================
+         BARRE DE NAVIGATION PRINCIPALE
+         ===================================================================
+         
+         La navigation s'adapte dynamiquement selon le rôle :
+         - Admin : Accès aux menus de gestion (utilisateurs, référentiel, liaisons, ressources)
+         - Formateur : Accès aux formations, stagiaires, dépôt ressources (si FPC)
+         - Stagiaire OP : Calendrier, ressources
+         - Stagiaire FPC : Mes documents, ressources formateur, menu distanciel (si activé)
+         
+         ================================================================= -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container-fluid">
             <a class="navbar-brand site-logo me-3 d-flex align-items-center" href="dashboard.php">
@@ -104,6 +223,8 @@ if (strpos($user['role'], 'stagiaire') === 0) {
                     <li class="nav-item">
                         <a class="nav-link active" href="dashboard.php">Accueil</a>
                     </li>
+                    
+                    <!-- ===== MENU ADMINISTRATEUR ===== -->
                     <?php if ($user['role'] == 'admin'): ?>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownGestion" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -116,6 +237,8 @@ if (strpos($user['role'], 'stagiaire') === 0) {
                                 <li><a class="dropdown-item" href="gestion_ressources.php">Gestion des ressources</a></li>
                             </ul>
                         </li>
+                        
+                    <!-- ===== MENU FORMATEUR ===== -->
                     <?php elseif ($user['role'] == 'formateur'): ?>
                         <li class="nav-item">
                             <a class="nav-link" href="#">Mes formations</a>
@@ -123,11 +246,14 @@ if (strpos($user['role'], 'stagiaire') === 0) {
                         <li class="nav-item">
                             <a class="nav-link" href="#">Stagiaires</a>
                         </li>
+                        <!-- Option dépôt ressource uniquement si le formateur a des stagiaires FPC -->
                         <?php if ($hasFPC): ?>
                             <li class="nav-item">
                                 <a class="nav-link" href="deposer_ressource.php">Déposer une ressource</a>
                             </li>
                         <?php endif; ?>
+                        
+                    <!-- ===== MENU STAGIAIRE OP ===== -->
                     <?php elseif ($user['role'] == 'stagiaire OP'): ?>
                         <li class="nav-item">
                             <a class="nav-link" href="#">Calendrier des séances</a>
@@ -135,6 +261,8 @@ if (strpos($user['role'], 'stagiaire') === 0) {
                         <li class="nav-item">
                             <a class="nav-link" href="#">Mes Ressources</a>
                         </li>
+                        
+                    <!-- ===== MENU STAGIAIRE FPC ===== -->
                     <?php elseif ($user['role'] == 'stagiaire FPC'): ?>
                         <li class="nav-item">
                             <a class="nav-link" href="mes_documents.php">Mes Documents</a>
@@ -142,6 +270,7 @@ if (strpos($user['role'], 'stagiaire') === 0) {
                         <li class="nav-item">
                             <a class="nav-link" href="mes_ressources.php">Ressources du formateur</a>
                         </li>
+                        <!-- Menu distanciel disponible uniquement si l'option est activée -->
                         <?php if ((int)($user['distanciel'] ?? 0) === 1): ?>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownDistanciel" role="button" data-bs-toggle="dropdown" aria-expanded="false">

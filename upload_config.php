@@ -1,4 +1,58 @@
 <?php
+/**
+ * ===================================================================
+ * CONFIGURATION DES UPLOADS - LIMITES ET VALIDATIONS
+ * ===================================================================
+ * 
+ * Fichier de configuration centralisé pour la gestion des uploads
+ * de fichiers (ressources pédagogiques).
+ * 
+ * FONCTIONNALITÉS :
+ * 
+ * 1. LIMITES DE TAILLE PAR TYPE :
+ *    - Audio : 50 Mo (MP3, WAV, OGG, M4A, FLAC)
+ *    - Vidéo : 200 Mo (MP4, AVI, MOV, WMV, FLV, MKV, WEBM)
+ *    - PDF : 20 Mo
+ *    - Images : 10 Mo (JPG, PNG, GIF, WEBP, SVG)
+ *    - Autres : 50 Mo (Office, ZIP, TXT)
+ * 
+ * 2. EXTENSIONS AUTORISÉES :
+ *    Tableau $ALLOWED_EXTENSIONS avec liste blanche par type
+ *    Toute extension non listée sera rejetée
+ * 
+ * 3. VALIDATION MIME TYPE :
+ *    Tableau $ALLOWED_MIME_TYPES pour double validation
+ *    Sécurité : vérification du type réel du fichier
+ * 
+ * 4. FONCTIONS UTILITAIRES :
+ *    - getFileType() : Détermine le type selon l'extension
+ *    - validateFileUpload() : Validation complète d'un upload
+ *    - getTargetDirectory() : Retourne le dossier de destination
+ *    - formatFileSize() : Formatage de la taille pour affichage
+ * 
+ * ORGANISATION DES FICHIERS :
+ *    uploads/
+ *    ├── audio/     (fichiers audio)
+ *    ├── video/     (fichiers vidéo)
+ *    ├── pdf/       (documents PDF)
+ *    ├── images/    (images)
+ *    └── autres/    (autres types)
+ * 
+ * SÉCURITÉ :
+ *    - Double validation : extension + MIME type
+ *    - Limites de taille strictes par type
+ *    - Liste blanche d'extensions uniquement
+ *    - Génération de noms de fichiers uniques (évite écrasement)
+ *    - Pas d'exécution de fichiers uploadés (dossier uploads/ protégé)
+ * 
+ * MODIFICATION DES LIMITES :
+ *    Pour augmenter les limites, modifier aussi :
+ *    - php.ini : upload_max_filesize et post_max_size
+ *    - Serveur web (Apache/Nginx) : client_max_body_size
+ * 
+ * ===================================================================
+ */
+
 // Configuration pour l'upload de fichiers
 // EDL+ - École des Langues Grand Calais
 

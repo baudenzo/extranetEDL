@@ -1,15 +1,55 @@
 <?php
+/**
+ * ===================================================================
+ * DASHBOARD FORMATEUR - ESPACE DÉDIÉ AUX FORMATEURS
+ * ===================================================================
+ * 
+ * Page spécialisée pour les formateurs affichant leurs stagiaires
+ * et les outils de gestion de formation.
+ * 
+ * FONCTIONNALITÉS :
+ * - Affichage de la liste des stagiaires liés (OP et/ou FPC)
+ * - Cards cliquables pour accéder à des fonctionnalités spécifiques
+ * - Modal détaillé des stagiaires
+ * - Accès au dépôt de ressources (si stagiaires FPC)
+ * 
+ * ACCÈS :
+ * - Réservé aux utilisateurs avec rôle "formateur" ou "admin"
+ * - Redirection vers la page de connexion si non autorisé
+ * 
+ * TYPES DE STAGIAIRES :
+ * - Stagiaire OP : Objectif Professionnel
+ * - Stagiaire FPC : Formation Professionnelle Continue
+ * 
+ * DÉPENDANCES :
+ * - connexionbdd.php : Connexion à la base de données
+ * - Table stagiaire_formateur : Liaisons formateur/stagiaire
+ * - Table utilisateurs : Données des stagiaires
+ * 
+ * ===================================================================
+ */
+
 session_start();
 include 'connexionbdd.php';
 
-// accès réservé aux formateurs
+// ===================================================================
+// CONTRÔLE D'ACCÈS : FORMATEURS ET ADMINS UNIQUEMENT
+// ===================================================================
+
+// Vérification que l'utilisateur est connecté et a le rôle formateur ou admin
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true || ($_SESSION['role'] !== 'formateur' && $_SESSION['role'] !== 'admin')) {
     header('Location: index.php');
     exit;
 }
 
+// ===================================================================
+// RÉCUPÉRATION DES DONNÉES DU FORMATEUR
+// ===================================================================
+
 $pdo = ConnexionBDD();
 $current = null;
+
+// Récupération des informations du formateur connecté (photo, nom, prénom)
 if (isset($_SESSION['user_id'])) {
     $st = $pdo->prepare('SELECT prenom, nom, photo FROM utilisateurs WHERE id = :id');
     $st->execute(['id' => $_SESSION['user_id']]);
@@ -18,11 +58,17 @@ if (isset($_SESSION['user_id'])) {
 
 $formateur_id = (int)($_SESSION['user_id'] ?? 0);
 
-// récupérer les stagiaires liés à ce formateur
+// ===================================================================
+// RÉCUPÉRATION DE LA LISTE DES STAGIAIRES
+// ===================================================================
+
+// Récupérer tous les stagiaires liés à ce formateur via la table stagiaire_formateur
 $stmt = $pdo->prepare('SELECT u.id, u.prenom, u.nom, u.role FROM utilisateurs u JOIN stagiaire_formateur sf ON u.id = sf.stagiaire_id WHERE sf.formateur_id = :fid ORDER BY u.prenom, u.nom');
 $stmt->execute(['fid' => $formateur_id]);
 $stagiaires = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Déterminer si le formateur a des stagiaires FPC et/ou OP
+// Permet d'afficher conditionnellement certains menus et fonctionnalités
 $hasFPC = false;
 $hasOP = false;
 foreach ($stagiaires as $s) {
@@ -31,6 +77,19 @@ foreach ($stagiaires as $s) {
 }
 
 ?>
+
+<!-- ===================================================================
+     STRUCTURE HTML: DASHBOARD FORMATEUR  
+     ===================================================================
+     
+     Cette page affiche :
+     - Une barre de navigation avec accès aux pages formateur
+     - Une card "Stagiaires liés" avec la liste des stagiaires
+     - Des cards pour accéder à d'autres fonctionnalités formateur
+     - Des modals pour afficher les détails
+     
+     ================================================================= -->
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -45,6 +104,16 @@ foreach ($stagiaires as $s) {
     </style>
 </head>
 <body>
+    <!-- ===================================================================
+         BARRE DE NAVIGATION FORMATEUR
+         ===================================================================
+         
+         Navigation spécifique pour les formateurs :
+         - Accueil : Retour au dashboard principal
+         - Espace formateur : Page actuelle
+         - Déposer une ressource : Disponible uniquement si le formateur a des stagiaires FPC
+         
+         ================================================================= -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container-fluid">
             <a class="navbar-brand site-logo me-3 d-flex align-items-center" href="dashboard.php">
@@ -61,6 +130,8 @@ foreach ($stagiaires as $s) {
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link" href="dashboard.php">Accueil</a></li>
                     <li class="nav-item"><a class="nav-link active" href="dashboard_formateur.php">Espace formateur</a></li>
+                    
+                    <!-- Lien "Déposer une ressource" uniquement si le formateur a des stagiaires FPC -->
                     <?php if ($hasFPC): ?>
                         <li class="nav-item"><a class="nav-link" href="deposer_ressource.php">Déposer une ressource</a></li>
                     <?php endif; ?>
@@ -72,6 +143,14 @@ foreach ($stagiaires as $s) {
         </div>
     </nav>
 
+    <!-- ===================================================================
+         CONTENU PRINCIPAL: LISTE DES STAGIAIRES ET FONCTIONNALITÉS
+         ===================================================================
+         
+         Affiche une card principale avec la liste des stagiaires liés
+         et un badge indiquant leur rôle (OP ou FPC)
+         
+         ================================================================= -->
     <div class="container mt-4">
         <h2>Mon espace formateur</h2>
 

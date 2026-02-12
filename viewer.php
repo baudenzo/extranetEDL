@@ -1,4 +1,55 @@
 <?php
+/**
+ * ===================================================================
+ * VISIONNEUSE DE RESSOURCES - VERSION COMPLÈTE
+ * ===================================================================
+ * 
+ * Page de visualisation des ressources pédagogiques avec interface
+ * enrichie et informations détaillées.
+ * 
+ * FONCTIONNALITÉS :
+ * 
+ * 1. AFFICHAGE DE LA RESSOURCE :
+ *    - Visualisation intégrée selon le type (PDF, audio, vidéo, image)
+ *    - Métadonnées : nom du fichier, uploader, date, taille
+ *    - Code référentiel associé (module et contenu)
+ *    - Bouton de téléchargement
+ * 
+ * 2. CONTRÔLE D'ACCÈS :
+ *    - Vérification que l'utilisateur est connecté
+ *    - Contrôle des droits :
+ *      * Formateur : peut voir ses propres ressources
+ *      * Stagiaire FPC : peut voir les ressources de son formateur
+ *      * Admin : accès complet
+ *    - Ressource doit être visible=1
+ * 
+ * 3. TYPES DE FICHIERS SUPPORTÉS :
+ *    - PDF : iframe avec PDF.js
+ *    - Audio : lecteur audio HTML5
+ *    - Vidéo : lecteur vidéo HTML5
+ *    - Images : affichage direct
+ *    - Autres : lien de téléchargement uniquement
+ * 
+ * 4. INTERFACE :
+ *    - Design responsive Bootstrap
+ *    - Barre de navigation complète
+ *    - Messages de debug (activables)
+ *    - Formulaire de modification (si formateur)
+ * 
+ * SÉCURITÉ :
+ *    - Validation de l'ID ressource
+ *    - Vérification stricte des droits d'accès
+ *    - Contrôle de la relation formateur-stagiaire
+ * 
+ * DÉPENDANCES :
+ *    - connexionbdd.php : Connexion à la base
+ *    - Table ressources : Stockage des fichiers
+ *    - Table stagiaire_formateur : Liaisons
+ *    - Table referentiel : Codes référentiel
+ * 
+ * ===================================================================
+ */
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);

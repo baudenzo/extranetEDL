@@ -1,3 +1,38 @@
+<?php
+/**
+ * ===================================================================
+ * PAGE PROFIL - CONSULTATION DU PROFIL UTILISATEUR
+ * ===================================================================
+ * 
+ * Page permettant à l'utilisateur connecté de visualiser son profil
+ * et ses informations personnelles.
+ * 
+ * FONCTIONNALITÉS :
+ * 
+ * 1. AFFICHAGE DU PROFIL :
+ *    - Photo de profil (personnalisée ou par défaut selon le sexe)
+ *    - Informations personnelles : nom, prénom, email
+ *    - Rôle adapté selon le sexe (Administrateur/Administratrice, etc.)
+ *    - Login unique
+ *    - Date de création du compte
+ *    - Option "Distanciel" si applicable (stagiaires FPC)
+ * 
+ * 2. NAVIGATION :
+ *    - Liens vers la modification du profil (modifier_profil.php)
+ *    - Barre de navigation adaptée au rôle
+ * 
+ * ACCÈS :
+ * - Utilisateurs connectés uniquement
+ * - Redirection vers login si non connecté
+ * 
+ * DÉPENDANCES :
+ * - connexionbdd.php : Connexion à la base de données
+ * - footer.php : Pied de page commun
+ * 
+ * ===================================================================
+ */
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -10,9 +45,14 @@
 </head>
 <body>
 <?php
+// ===================================================================
+// CONTRÔLE D'ACCÈS ET RÉCUPÉRATION DES DONNÉES
+// ===================================================================
+
 session_start();
 include 'connexionbdd.php';
 
+// Vérification que l'utilisateur est connecté
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     header('Location: index.php');
     exit;
@@ -21,16 +61,27 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 $pdo = ConnexionBDD();
 $user_id = $_SESSION['user_id'];
 
+// Récupération des informations complètes de l'utilisateur
 $stmt = $pdo->prepare('SELECT * FROM utilisateurs WHERE id = :id');
 $stmt->execute(['id' => $user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
+// Sécurité : vérifier que l'utilisateur existe
 if (!$user) {
     echo "Utilisateur non trouvé.";
     exit;
 }
 
-// Fonction pour adapter le rôle selon le sexe
+/**
+ * ====================================
+ * FONCTION : getRoleLabel
+ * ====================================
+ * Adapte l'affichage du rôle selon le sexe de l'utilisateur.
+ * 
+ * @param string $role Le rôle de l'utilisateur
+ * @param string $sexe Le sexe de l'utilisateur
+ * @return string Le libellé du rôle adapté
+ */
 function getRoleLabel($role, $sexe) {
     if ($role === 'admin') {
         if ($sexe === 'feminin') return 'Administratrice';
@@ -45,12 +96,29 @@ function getRoleLabel($role, $sexe) {
     return ucfirst($role);
 }
 
+/**
+ * ====================================
+ * FONCTION : getDefaultPhoto
+ * ====================================
+ * Retourne le chemin vers la photo de profil par défaut selon le sexe.
+ * 
+ * @param string $sexe Le sexe de l'utilisateur
+ * @return string Le chemin vers la photo par défaut
+ */
 function getDefaultPhoto($sexe) {
     if ($sexe === 'feminin') return 'pp/defaultf.png';
     if ($sexe === 'masculin') return 'pp/defaulth.jpg';
     return 'pp/default.jpg';
 }
 ?>
+
+<!-- ===================================================================
+     BARRE DE NAVIGATION
+     ===================================================================
+     
+     Navigation adaptée au rôle de l'utilisateur avec lien actif sur "Profil".
+     
+     ================================================================= -->
 
 <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container-fluid">

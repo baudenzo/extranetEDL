@@ -1,4 +1,56 @@
 <?php
+/**
+ * ===================================================================
+ * FONCTIONS D'ENVOI D'EMAIL
+ * ===================================================================
+ * 
+ * Bibliothèque de fonctions pour l'envoi d'emails dans l'application EDL+.
+ * Utilise PHPMailer pour l'envoi via SMTP.
+ * 
+ * FONCTIONS DISPONIBLES :
+ * 
+ * 1. envoyerEmailResetPassword() :
+ *    - Envoi d'un email de réinitialisation de mot de passe
+ *    - Inclut un lien avec token unique valable 60 minutes
+ *    - Utilise un template HTML responsive
+ * 
+ * 2. envoyerEmailNouveauCompte() :
+ *    - Envoi des identifiants à un nouvel utilisateur
+ *    - Inclut le numéro de login unique et le mot de passe temporaire
+ *    - Instructions pour la première connexion
+ * 
+ * 3. creerTokenReset() :
+ *    - Génération d'un token unique de réinitialisation
+ *    - Stockage en base avec date d'expiration
+ *    - Suppression des anciens tokens de l'utilisateur
+ * 
+ * 4. verifierTokenReset() :
+ *    - Vérification de la validité d'un token
+ *    - Contrôle de l'expiration
+ *    - Retourne l'ID utilisateur si valide
+ * 
+ * 5. genererLoginUnique() :
+ *    - Génération d'un numéro de login unique (format: L suivi de 6 chiffres)
+ *    - Vérification d'unicité dans la base
+ * 
+ * CONFIGURATION :
+ * - Les paramètres SMTP sont définis dans email_config.php
+ * - BASE_URL : URL de base pour les liens (réinitialisation mot de passe)
+ * - TOKEN_EXPIRATION_MINUTES : Durée de validité des tokens
+ * 
+ * SÉCURITÉ :
+ * - Tokens générés avec random_bytes() (cryptographiquement sûrs)
+ * - Hachage SHA-256 pour le stockage des tokens
+ * - Expiration automatique des tokens
+ * - Suppression des tokens utilisés
+ * 
+ * DÉPENDANCES :
+ * - PHPMailer : Bibliothèque d'envoi d'emails
+ * - email_config.php : Configuration SMTP
+ * - Table password_resets : Stockage des tokens de réinitialisation
+ * 
+ * ===================================================================
+ */
 
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/email_config.php';

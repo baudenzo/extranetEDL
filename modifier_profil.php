@@ -1,6 +1,48 @@
 <?php
+/**
+ * ===================================================================
+ * MODIFICATION DU PROFIL UTILISATEUR
+ * ===================================================================
+ * 
+ * Page permettant à l'utilisateur connecté de modifier ses informations
+ * personnelles et sa photo de profil.
+ * 
+ * FONCTIONNALITÉS :
+ * 
+ * 1. MODIFICATION DES INFORMATIONS :
+ *    - Prénom, nom, email, sexe
+ *    - Changement de mot de passe (optionnel)
+ *    - Mise à jour de la session après modification
+ * 
+ * 2. GESTION DE LA PHOTO DE PROFIL :
+ *    - Upload d'une nouvelle photo (formats: jpg, jpeg, png)
+ *    - Suppression de l'ancienne photo lors du remplacement
+ *    - Validation du format et de la taille
+ *    - Stockage dans le dossier pp/ avec l'ID utilisateur comme nom
+ * 
+ * SÉCURITÉ :
+ * - Validation et sanitisation des données d'entrée
+ * - Hachage du mot de passe avec SHA2-256
+ * - Contrôle des formats de fichiers autorisés
+ * - Mise à jour de la session après modification
+ * 
+ * ACC visÈS :
+ * - Utilisateurs connectés uniquement
+ * - Redirection vers login si non connecté
+ * 
+ * DÉPENDANCES :
+ * - connexionbdd.php : Connexion à la base de données
+ * - footer.php : Pied de page commun
+ * 
+ * ===================================================================
+ */
+
 session_start();
 include 'connexionbdd.php';
+
+// ===================================================================
+// CONTRÔLE D'ACCÈS
+// ===================================================================
 
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     header('Location: index.php');
