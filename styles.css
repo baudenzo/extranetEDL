@@ -1,4 +1,18 @@
-/* Style moderne et épuré */
+/*=============================================================================
+  FEUILLE DE STYLES - PLATEFORME EDL
+  Description : Styles modernes et épurés pour la plateforme d'apprentissage
+  Palette de couleurs :
+    - Primaire : #199ea3 (bleu turquoise)
+    - Secondaire : #7cc8cb (bleu clair)
+    - Tertiaire : #0d7377 (bleu foncé)
+    - Fond : #f5f7fa → #c3cfe2 (dégradé)
+=============================================================================*/
+
+/*-----------------------------------------------------------------------------
+  1. STYLES DE BASE
+-----------------------------------------------------------------------------*/
+
+/* Configuration du body avec dégradé de fond et flexbox pour le footer collant */
 body {
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     min-height: 100vh;
@@ -9,31 +23,44 @@ body {
     position: relative;
 }
 
+/* Prévenir le débordement horizontal sur toute la page */
 html {
     overflow-x: hidden;
 }
 
+/* Container principal qui prend tout l'espace disponible */
 .container {
     flex: 1;
     position: relative;
-    z-index: 1; /* s'assurer que le contenu soit au-dessus du background logo */
+    z-index: 1; /* S'assurer que le contenu soit au-dessus du background logo */
 }
 
+/*-----------------------------------------------------------------------------
+  2. ÉLÉMENTS DÉCORATIFS
+-----------------------------------------------------------------------------*/
+
+/* Vagues décoratives en bas de page (position fixe) */
 .waves{
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
     z-index: -1;
-    transform: scaleY(-1);
+    transform: scaleY(-1); /* Inverser les vagues */
 }
 
+/*-----------------------------------------------------------------------------
+  3. BARRE DE NAVIGATION
+-----------------------------------------------------------------------------*/
+
+/* Navbar personnalisée avec dégradé et ombre */
 .navbar-custom {
     background: linear-gradient(135deg, #199ea3 0%, #0d7377 100%);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     border: none;
 }
 
+/* Styles communs pour tous les éléments de la navbar */
 .navbar-custom .navbar-brand, .navbar-custom .navbar-nav .nav-link,
 .navbar-custom .navbar-text {
     color: white !important;
@@ -43,19 +70,31 @@ html {
     margin: 0 8px;
 }
 
-/* Logo in navbar (site brand) */
-.navbar-brand.site-logo img { height: 40px; object-fit: contain; }
-@media (max-width: 575px) { .navbar-brand.site-logo img { height: 32px; } }
+/* Logo du site dans la navbar */
+.navbar-brand.site-logo img { 
+    height: 40px; 
+    object-fit: contain; 
+}
 
+/* Taille du logo réduite sur très petits écrans */
+@media (max-width: 575px) { 
+    .navbar-brand.site-logo img { 
+        height: 32px; 
+    } 
+}
+
+/* Effet hover sur le logo */
 .navbar-custom .navbar-brand:hover {
     background-color: rgba(255, 255, 255, 0.15);
 }
 
+/* Effet hover sur les liens de navigation */
 .navbar-custom .navbar-nav .nav-link:hover {
     background-color: rgba(255, 255, 255, 0.15);
-    transform: translateY(-2px);
+    transform: translateY(-2px); /* Légère élévation */
 }
 
+/* Style du lien actif (page en cours) */
 .navbar-custom .navbar-nav .nav-link.active {
     background-color: rgba(255, 255, 255, 0.25);
     border-radius: 8px;
@@ -63,7 +102,11 @@ html {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Cartes avec design différent */
+/*-----------------------------------------------------------------------------
+  4. CARTES (CARDS)
+-----------------------------------------------------------------------------*/
+
+/* Style moderne des cartes avec coins arrondis et ombre */
 .card {
     border: none;
     border-radius: 16px;
@@ -71,6 +114,7 @@ html {
     overflow: hidden;
 }
 
+/* En-tête de carte avec dégradé */
 .card-header {
     background: linear-gradient(135deg, #199ea3 0%, #7cc8cb 100%);
     color: white;
@@ -79,12 +123,17 @@ html {
     padding: 20px;
 }
 
+/* Corps de carte avec fond blanc */
 .card-body {
     padding: 24px;
     background-color: white;
 }
 
-/* Boutons stylisés */
+/*-----------------------------------------------------------------------------
+  5. BOUTONS
+-----------------------------------------------------------------------------*/
+
+/* Bouton primaire avec dégradé et effet d'élévation */
 .btn-primary {
     background: linear-gradient(135deg, #199ea3 0%, #0d7377 100%);
     border: none;
@@ -95,12 +144,14 @@ html {
     box-shadow: 0 4px 12px rgba(25, 158, 163, 0.3);
 }
 
+/* Effet hover : élévation et inversion du dégradé */
 .btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(25, 158, 163, 0.4);
     background: linear-gradient(135deg, #0d7377 0%, #199ea3 100%);
 }
 
+/* Bouton secondaire gris */
 .btn-secondary {
     background-color: #6c757d;
     border: none;
@@ -110,12 +161,17 @@ html {
     transition: all 0.3s ease;
 }
 
+/* Effet hover sur bouton secondaire */
 .btn-secondary:hover {
     background-color: #5a6268;
     transform: translateY(-2px);
 }
 
-/* Inputs modernes */
+/*-----------------------------------------------------------------------------
+  6. FORMULAIRES
+-----------------------------------------------------------------------------*/
+
+/* Champs de saisie et sélecteurs avec coins arrondis */
 .form-control, .form-select {
     border: 2px solid #e0e0e0;
     border-radius: 10px;
@@ -123,27 +179,38 @@ html {
     transition: all 0.3s ease;
 }
 
+/* Effet focus : bordure colorée et ombre douce */
 .form-control:focus, .form-select:focus {
     border-color: #199ea3;
     box-shadow: 0 0 0 4px rgba(25, 158, 163, 0.1);
 }
 
-/* pp modifiés */
+/*-----------------------------------------------------------------------------
+  7. IMAGES ET AVATARS
+-----------------------------------------------------------------------------*/
+
+/* Photos de profil circulaires avec bordure blanche */
 .rounded-circle {
     border: 3px solid white;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* Images fluides avec taille maximale */
 .img-fluid {
     max-width: 200px;
     height: auto;
 }
 
+/* Espacement pour les éléments centrés */
 .text-center {
     padding-bottom: 15px;
 }
 
-/* Alertes */
+/*-----------------------------------------------------------------------------
+  8. ALERTES
+-----------------------------------------------------------------------------*/
+
+/* Messages d'alerte avec coins arrondis et ombre */
 .alert {
     border: none;
     border-radius: 12px;
@@ -151,18 +218,25 @@ html {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* Responsive pour mobile */
+/*-----------------------------------------------------------------------------
+  9. RESPONSIVE - ADAPTATIONS MOBILES
+-----------------------------------------------------------------------------*/
+
+/* Adaptations pour tablettes et mobiles */
 @media (max-width: 768px) {
+    /* Réduction du padding sur petits écrans */
     .container-fluid {
         padding-left: 15px !important;
         padding-right: 15px !important;
     }
     
+    /* Défilement horizontal fluide pour les tableaux */
     .table-responsive {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
     
+    /* Réduction de la taille des éléments de navigation */
     .navbar-custom .navbar-nav .nav-link,
     .navbar-custom .navbar-brand {
         margin: 4px;
@@ -170,57 +244,64 @@ html {
         font-size: 14px;
     }
     
+    /* Espacement des cartes sur mobile */
     .card {
         margin-bottom: 20px;
     }
     
+    /* Réduction de la taille des titres */
     h2 {
         font-size: 1.5rem;
     }
 }
 
-/* couleur principale : #199ea3 - bleu
-couleur secondaire : #7cc8cb - autre bleu
-couleur tertiaire : #ffffff - blanc */
+/*-----------------------------------------------------------------------------
+  10. FOOTER
+-----------------------------------------------------------------------------*/
 
-/* Footer avec vagues */
+/* Vagues décoratives du footer (inversées) */
 .waves-footer {
     position: relative;
     width: 100%;
     height: 120px;
     margin-top: 80px;
-    transform: scaleY(-1);
+    transform: scaleY(-1); /* Inverser pour effet vague du haut */
 }
 
 .waves-footer svg {
     position: relative;
     display: block;
-    width: calc(100% + 1.3px);
+    width: calc(100% + 1.3px); /* Éviter les espaces blancs */
     height: 120px;
 }
 
+/* Footer personnalisé avec couleur primaire */
 .footer-custom {
     background-color: #199ea3 !important;
     color: white;
-    margin-top: -7px;
+    margin-top: -7px; /* Coller aux vagues */
     padding-top: 30px;
 }
 
+/* Titres dans le footer */
 .footer-custom h5 {
     color: white;
     font-weight: 600;
     margin-bottom: 1rem;
 }
 
+/* Liens dans le footer */
 .footer-custom a {
     color: white;
     transition: all 0.3s ease;
 }
 
+/* Effet hover sur les liens du footer */
 .footer-custom a:hover {
-    color: #7cc8cb;
+    color: #7cc8cb; /* Couleur secondaire */
 }
 
+/* Effet hover sur les boutons du footer */
 .footer-custom .btn-outline-light:hover {
     background-color: rgba(255, 255, 255, 0.2);
     border-color: white;
@@ -228,96 +309,107 @@ couleur tertiaire : #ffffff - blanc */
     transform: translateY(-2px);
 }
 
-/* style pour toute la bande blanche des partenaires */
+/*-----------------------------------------------------------------------------
+  11. SECTION PARTENAIRES
+  Description : Section affichant les logos des partenaires et financeurs
+  avec une mise en page en deux colonnes séparées par une ligne verticale
+-----------------------------------------------------------------------------*/
+
+/* Container principal de la section partenaires */
 .partenaires-section {
-    border-radius: 2rem; /* Arrondir les coins de la section */
-    box-shadow: 0 6px 24px 0 rgba(25, 158, 163, 0.10), 0 2px 8px 0 rgba(0,0,0,0.08); /* ombre à l'arrière */
-    margin-left: auto; /* permet de centrer horizontalement */
-    margin-right: auto; /* permet de centrer horizontalement */
-    margin-bottom: 2rem; /* espace en bas de la section */
-    margin-top: 2rem; /* espace en haut de la section */
-    max-width: 1800px; /* largeur maximale de la section */
-    width: 100%; /* occupe toute la largeur disponible */
-    min-height: 210px; /* hauteur minimale */
-    border: none; /* pas de bordure */
-    display: flex; /* utiliser flexbox pour la mise en page */
-    align-items: stretch; /* étirer les colonnes pour qu'elles aient la même hauteur */
-    justify-content: center; /* centrer horizontalement les colonnes */
+    border-radius: 2rem;
+    box-shadow: 0 6px 24px 0 rgba(25, 158, 163, 0.10), 0 2px 8px 0 rgba(0,0,0,0.08);
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 2rem;
+    margin-top: 2rem;
+    max-width: 1800px;
+    width: 100%;
+    min-height: 210px;
+    border: none;
+    display: flex;
+    align-items: stretch; /* Les colonnes ont la même hauteur */
+    justify-content: center;
 }
 
-/* styles pour les colonnes gauche et droite */
+/* Colonnes gauche et droite pour les partenaires et financeurs */
 .partenaires-col-gauche, .partenaires-col-droite {
-    min-height: 210px; /* hauteur minimale pour correspondre à la section */
-    padding: 1.5rem; /* espace intérieur */
-    position: relative; /* pour le séparateur vertical */
-    display: flex; /* utiliser flexbox pour la mise en page */
-    flex-direction: column; /* empiler les éléments verticalement */
-    align-items: center; /* centrer horizontalement */
-    justify-content: center; /* centrer verticalement */
-    text-align: center; /* centrer le texte */
-    height: 100%; /* occupe toute la hauteur disponible */
+    min-height: 210px;
+    padding: 1.5rem;
+    position: relative; /* Pour positionner le séparateur vertical */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
 }
 
-/* styles pour la ligne des logos */
-.partenaires-logos-ligne {
-    width: 100%; /* occupe toute la largeur disponible */
-    flex-wrap: nowrap !important; /* empêcher le retour à la ligne */
-    justify-content: center !important; /* centrer horizontalement */
-    align-items: center !important; /* centrer verticalement */
-    gap: 2.5vw; /* espace entre les logos */
-    margin-left: auto; /* centrer horizontalement */
-    margin-right: auto; /* centrer horizontalement */
-}
-
-/* style pour le séparateur vertical entre les deux colonnes */
-.partenaires-separateur-vertical {
-    position: absolute; /* positionnement absolu qui permet de positionner précisément le séparateur */
-    left: 0; /* aligner à gauche de la colonne droite */
-    top: 20%; /* 20% depuis le haut */
-    bottom: 20%; /* 20% depuis le bas */
-    width: 1.5px; /* largeur du séparateur */
-    background: #e0e0e0; /* couleur gris clair */
-    height: 60%; /* hauteur du séparateur */
-    z-index: 2; /* positionner au-dessus des autres éléments */ 
-    margin-left: -1.5px; /* se décaler légèrement vers la gauche pour être centré */
-}
-
-/* styles pour les colonnes gauche et droite */
+/* Coins arrondis pour la colonne de droite */
 .partenaires-col-droite {
-    border-top-right-radius: 2rem; /* Arrondir le coin supérieur droit */
-    border-bottom-right-radius: 2rem; /* Arrondir le coin inférieur droit */
+    border-top-right-radius: 2rem;
+    border-bottom-right-radius: 2rem;
 }
+
+/* Coins arrondis pour la colonne de gauche */
 .partenaires-col-gauche {
-    border-top-left-radius: 2rem; /* Arrondir le coin supérieur gauche */
-    border-bottom-left-radius: 2rem; /* Arrondir le coin inférieur gauche */
+    border-top-left-radius: 2rem;
+    border-bottom-left-radius: 2rem;
 }
 
+/* Ligne horizontale contenant les logos */
 .partenaires-logos-ligne {
-    width: 100%; /* occupe toute la largeur disponible */
-    flex-wrap: nowrap !important; /* empêcher le retour à la ligne */
-    justify-content: center !important; /* centrer horizontalement */
-    gap: 2.5vw; /* espace entre les logos */
+    width: 100%;
+    flex-wrap: nowrap !important; /* Empêcher le retour à la ligne */
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 2.5vw; /* Espace entre les logos (adaptatif) */
+    margin-left: auto;
+    margin-right: auto;
 }
 
-/* styles pour les logos des partenaires */
+/* Séparateur vertical entre les deux colonnes */
+.partenaires-separateur-vertical {
+    position: absolute;
+    left: 0;
+    top: 20%;
+    bottom: 20%;
+    width: 1.5px;
+    background: #e0e0e0;
+    height: 60%;
+    z-index: 2;
+    margin-left: -1.5px; /* Centrer le séparateur sur la bordure */
+}
+
+/* Style de base pour les logos des partenaires */
 .partenaire-logo {
-    max-height: 70px; /* hauteur maximale */
-    max-width: 120px; /* largeur maximale */
-    width: auto; /* largeur automatique pour conserver les proportions */
-    height: auto; /* hauteur automatique pour conserver les proportions */
-    object-fit: contain; /* conserver les proportions de l'image */
-    transition: transform 0.3s ease, opacity 0.3s ease; /* transition douce pour les effets */
-    filter: grayscale(0%); /* pas de filtre gris */
-    flex-shrink: 1; /* permettre aux logos de rétrécir si nécessaire */
+    max-height: 80px;
+    max-width: 150px;
+    width: auto;
+    height: auto;
+    object-fit: contain; /* Préserver les proportions */
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    filter: grayscale(0%);
+    flex-shrink: 1; /* Permettre le rétrécissement si nécessaire */
 }
 
-/* styles pour les logos des partenaires sur mobile */
+/* Effet hover sur les logos : agrandissement + transparence */
+.partenaire-logo:hover {
+    transform: scale(1.05);
+    opacity: 0.8;
+}
+
+/* Adaptations responsive pour les logos des partenaires */
+
+/* Écrans moyens (< 1200px) */
 @media (max-width: 1200px) {
     .partenaire-logo {
         max-height: 55px;
         max-width: 90px;
     }
 }
+
+/* Petits écrans (< 900px) */
 @media (max-width: 900px) {
     .partenaire-logo {
         max-height: 40px;
@@ -325,22 +417,7 @@ couleur tertiaire : #ffffff - blanc */
     }
 }
 
-/* effets quand on passe sur les logos */
-.partenaire-logo {
-    max-height: 80px;
-    max-width: 150px;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    filter: grayscale(0%);
-}
-
-.partenaire-logo:hover {
-    transform: scale(1.05); /* agrandir légèrement */
-    opacity: 0.8; /* réduire l'opacité */
-}
-
+/* Mobiles (< 768px) */
 @media (max-width: 768px) {
     .partenaire-logo {
         max-height: 60px;
